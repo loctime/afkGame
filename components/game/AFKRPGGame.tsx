@@ -102,6 +102,21 @@ const AFKRPGGame: React.FC = () => {
         style={{ height: 'calc(100vh - 120px)' }}
       />
       
+      {/* Help Message when no enemies */}
+      {!gameState.isFighting && activeTab === 'map' && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-800/90 backdrop-blur-sm rounded-lg p-6 border border-gray-600 shadow-lg max-w-md text-center">
+          <h3 className="text-white font-bold text-lg mb-3">🎮 ¡Bienvenido al AFK RPG!</h3>
+          <p className="text-gray-300 text-sm mb-4">
+            Tu personaje tiene habilidades automáticas que se activan durante el combate.
+          </p>
+          <div className="space-y-2 text-xs text-gray-400">
+            <p>• Haz clic en <span className="text-green-400 font-bold">"Start Wave"</span> para comenzar</p>
+            <p>• Ve a <span className="text-blue-400 font-bold">"Character"</span> para ver tus habilidades</p>
+            <p>• El modo <span className="text-green-400 font-bold">AFK</span> está activado automáticamente</p>
+          </div>
+        </div>
+      )}
+      
       {/* Side Panel for Character (Right Side) */}
       {activeTab === 'character' && (
         <div className="absolute top-12 right-0 w-1/3 h-full bg-gray-900/95 border-l border-gray-700 overflow-y-auto">

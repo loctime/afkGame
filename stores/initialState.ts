@@ -19,7 +19,7 @@ export const initialGameState: GameState = {
   currentPhase: 1,
   isInBossWave: false,
   isFighting: false,
-  isAfk: false,
+  isAfk: true, // Activar AFK por defecto
   lastPlayTime: Date.now(),
   totalPlayTime: 0,
   currentBackground: 1,

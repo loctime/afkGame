@@ -28,6 +28,9 @@ export interface Enemy {
   damage: number;
   xpReward: number;
   goldReward: number;
+  behavior: 'melee' | 'ranged' | 'tank' | 'aggressive';
+  preferredDistance: number;
+  speed: number;
   sprite?: any; // PIXI.Sprite
   x: number;
   y: number;

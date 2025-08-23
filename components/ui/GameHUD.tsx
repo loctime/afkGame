@@ -74,9 +74,9 @@ export const GameHUD: React.FC<GameHUDProps> = ({ startNewWave }) => {
           
           <button
             onClick={startNewWave}
-            className="px-3 py-1 bg-green-600 text-white rounded text-sm font-bold"
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm font-bold hover:bg-green-700 transition-colors"
           >
-            Start Wave
+            {gameState.isFighting ? 'Wave Active' : 'Start Wave'}
           </button>
         </div>
         

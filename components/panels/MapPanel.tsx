@@ -24,6 +24,12 @@ export const MapPanel: React.FC = () => {
             </span>
           </div>
           <div>
+            <span className="text-gray-400 text-xs">Combat:</span>
+            <span className={`ml-1 font-bold text-xs ${gameState.isFighting ? 'text-orange-400' : 'text-gray-400'}`}>
+              {gameState.isFighting ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+          <div>
             <span className="text-gray-400 text-xs">Enemies:</span>
             <span className="text-white ml-1 font-bold text-xs">{useGameStore.getState().renderState.enemies.length}</span>
           </div>

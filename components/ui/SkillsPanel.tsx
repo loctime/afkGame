@@ -30,7 +30,7 @@ export const SkillsPanel: React.FC = () => {
 
   return (
     <div className="bg-gray-800 rounded-lg p-4">
-      <h3 className="text-white text-lg font-semibold mb-4">Habilidades</h3>
+      <h3 className="text-white text-lg font-semibold mb-4">🎯 Habilidades Activas</h3>
       
       <div className="space-y-3">
         {skills.map((skill) => (

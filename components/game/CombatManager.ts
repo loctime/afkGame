@@ -38,8 +38,17 @@ export class CombatManager {
         this.store.gainXp(enemy.xpReward);
         this.store.player.gold += enemy.goldReward;
         
-        // Remove enemy
-        this.store.renderState.enemies.shift();
+        // Remove enemy from visual game and array
+        if (enemy.sprite) {
+          // Remove from PIXI container
+          enemy.sprite.parent?.removeChild(enemy.sprite);
+        }
+        
+        // Remove from array
+        const enemyIndex = this.store.renderState.enemies.indexOf(enemy);
+        if (enemyIndex > -1) {
+          this.store.renderState.enemies.splice(enemyIndex, 1);
+        }
         
         // Check if wave completed
         if (this.store.renderState.enemies.length === 0) {
