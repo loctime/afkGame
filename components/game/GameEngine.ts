@@ -6,7 +6,9 @@ export class GameEngine {
   private app: PIXI.Application;
   private gameContainer: PIXI.Container;
   private enemies: Map<string, PIXI.Sprite> = new Map();
-  private player: PIXI.Sprite | null = null;
+  private player: PIXI.AnimatedSprite | null = null;
+  private playerAnimations: Map<string, PIXI.Texture[]> = new Map();
+  private currentAnimation: string = 'idle';
   private gameLoop: number = 0;
   private store: GameStore;
 
@@ -32,19 +34,67 @@ export class GameEngine {
   }
   
   private setupPlayer() {
-    // Create player sprite (simple colored rectangle for now)
-    const graphics = new PIXI.Graphics();
-    graphics.beginFill(0x00ff00);
-    graphics.drawRect(0, 0, 32, 32);
-    graphics.endFill();
+    // Cargar sprites individuales para animación de idle
+    const idleFrames = [];
+    for (let i = 1; i <= 4; i++) {
+      idleFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_IDLE_${i}.png`));
+    }
     
-    const texture = this.app.renderer.generateTexture(graphics);
-    this.player = new PIXI.Sprite(texture);
+    // Crear animación de idle
+    const idleAnimation = new PIXI.AnimatedSprite(idleFrames);
+    idleAnimation.animationSpeed = 0.1;
+    idleAnimation.play();
+    
+    this.player = idleAnimation;
+    this.player.width = 64; // Ajustar tamaño si es necesario
+    this.player.height = 64;
     this.player.x = this.app.screen.width / 2;
     this.player.y = this.app.screen.height / 2;
     this.player.anchor.set(0.5);
     
     this.gameContainer.addChild(this.player);
+    
+    // Cargar todas las animaciones
+    this.loadPlayerAnimations();
+  }
+  
+  private loadPlayerAnimations() {
+    // Cargar animación de idle
+    const idleFrames = [];
+    for (let i = 1; i <= 4; i++) {
+      idleFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_IDLE_${i}.png`));
+    }
+    this.playerAnimations.set('idle', idleFrames);
+    
+    // Cargar animación de run
+    const runFrames = [];
+    for (let i = 1; i <= 4; i++) {
+      runFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_RUN_${i}.png`));
+    }
+    this.playerAnimations.set('run', runFrames);
+    
+    // Cargar animación de hit
+    const hitFrames = [];
+    for (let i = 1; i <= 2; i++) {
+      hitFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_HIT_${i}.png`));
+    }
+    this.playerAnimations.set('hit', hitFrames);
+    
+    // Cargar animación de dead
+    const deadFrames = [];
+    deadFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_DEAD.png`));
+    this.playerAnimations.set('dead', deadFrames);
+  }
+  
+  private changePlayerAnimation(animationName: string) {
+    if (!this.player || this.currentAnimation === animationName) return;
+    
+    const frames = this.playerAnimations.get(animationName);
+    if (frames) {
+      this.player.textures = frames;
+      this.player.play();
+      this.currentAnimation = animationName;
+    }
   }
   
   private createEnemy(enemy: Enemy): PIXI.Sprite {
@@ -145,9 +195,15 @@ export class GameEngine {
     if (this.store.renderState.enemies.length > 0 && Math.random() < deltaTime) {
       const enemy = this.store.renderState.enemies[0];
       
-      // Player attacks enemy
+      // Player attacks enemy - Mostrar animación de ataque
+      this.changePlayerAnimation('run');
       const playerDamage = 20 + (player.stats.str * 2);
       enemy.hp -= playerDamage;
+      
+      // Volver a idle después del ataque
+      setTimeout(() => {
+        this.changePlayerAnimation('idle');
+      }, 200);
       
       if (enemy.hp <= 0) {
         // Enemy defeated
@@ -167,8 +223,14 @@ export class GameEngine {
           this.completeWave();
         }
       } else {
-        // Enemy attacks player
+        // Enemy attacks player - Mostrar animación de hit
         this.store.takeDamage(enemy.damage);
+        this.changePlayerAnimation('hit');
+        
+        // Volver a idle después de un tiempo
+        setTimeout(() => {
+          this.changePlayerAnimation('idle');
+        }, 500);
         
         if (player.hp <= 0) {
           this.gameOver();
@@ -198,8 +260,15 @@ export class GameEngine {
   private gameOver() {
     this.store.gameState.isAfk = false;
     this.store.gameState.isFighting = false;
-    // Reset to safe state, heal player
-    this.store.heal(this.store.player.maxHp);
+    
+    // Mostrar animación de muerte
+    this.changePlayerAnimation('dead');
+    
+    // Reset to safe state, heal player after a delay
+    setTimeout(() => {
+      this.store.heal(this.store.player.maxHp);
+      this.changePlayerAnimation('idle');
+    }, 2000);
   }
   
   public startWave(wave: number) {

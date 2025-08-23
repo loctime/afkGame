@@ -15,6 +15,55 @@ export const InventoryPanel: React.FC = () => {
     };
     return colors[rarity as keyof typeof colors] || colors.common;
   };
+
+  const getItemTypeColor = (type: string, isEquipped: boolean = false) => {
+    const colors = {
+      pet: isEquipped 
+        ? { borderColor: '#8b5cf6', backgroundColor: 'rgba(147, 51, 234, 0.5)' }
+        : { borderColor: '#a78bfa', backgroundColor: 'rgba(147, 51, 234, 0.3)' },
+      necklace: isEquipped 
+        ? { borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.5)' }
+        : { borderColor: '#facc15', backgroundColor: 'rgba(234, 179, 8, 0.3)' },
+      ring: isEquipped 
+        ? { borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.5)' }
+        : { borderColor: '#facc15', backgroundColor: 'rgba(234, 179, 8, 0.3)' },
+      helmet: isEquipped 
+        ? { borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.5)' }
+        : { borderColor: '#60a5fa', backgroundColor: 'rgba(59, 130, 246, 0.3)' },
+      wings: isEquipped 
+        ? { borderColor: '#ffffff', backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+        : { borderColor: '#d1d5db', backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+      weapon: isEquipped 
+        ? { borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.5)' }
+        : { borderColor: '#f87171', backgroundColor: 'rgba(239, 68, 68, 0.3)' },
+      bracelet: isEquipped 
+        ? { borderColor: '#ec4899', backgroundColor: 'rgba(236, 72, 153, 0.5)' }
+        : { borderColor: '#f9a8d4', backgroundColor: 'rgba(236, 72, 153, 0.3)' },
+      chest: isEquipped 
+        ? { borderColor: '#6b7280', backgroundColor: 'rgba(126, 49, 170, 0.5)' }
+        : { borderColor: '#9ca3af', backgroundColor: 'rgba(120, 79, 143, 0.5)' },
+      shield: isEquipped 
+        ? { borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.5)' }
+        : { borderColor: '#4ade80', backgroundColor: 'rgba(34, 197, 94, 0.3)' },
+      gloves: isEquipped 
+        ? { borderColor: '#f59e0b', backgroundColor: 'rgba(148, 95, 4, 0.13)' }
+        : { borderColor: '#fbbf24', backgroundColor: 'rgba(245, 158, 11, 0.3)' },
+      pants: isEquipped 
+        ? { borderColor: '#6b7280', backgroundColor: 'rgba(97, 114, 150, 0.5)' }
+        : { borderColor: '#9ca3af', backgroundColor: 'rgba(107, 114, 128, 0.3)' },
+      boots: isEquipped 
+        ? { borderColor: '#78716c', backgroundColor: 'rgba(120, 113, 108, 0.5)' }
+        : { borderColor: '#a8a29e', backgroundColor: 'rgba(120, 113, 108, 0.3)' },
+      artifact: isEquipped 
+        ? { borderColor: '#eab308', backgroundColor: 'rgba(234, 179, 8, 0.5)' }
+        : { borderColor: '#facc15', backgroundColor: 'rgba(234, 179, 8, 0.3)' },
+    };
+    
+    return colors[type as keyof typeof colors] || (isEquipped 
+      ? { borderColor: '#6b7280', backgroundColor: 'rgba(107, 114, 128, 0.5)' }
+      : { borderColor: '#9ca3af', backgroundColor: 'rgba(107, 114, 128, 0.3)' }
+    );
+  };
   
   const getItemIcon = (type: string) => {
     const icons = {
@@ -63,6 +112,7 @@ export const InventoryPanel: React.FC = () => {
   const renderEquipmentSlot = (slotKey: keyof typeof equipment, item?: Item, isSpecial = false) => {
     const Icon = item ? getItemIcon(item.type) : getItemIcon(slotKey.replace(/[0-9]/g, '') as any);
     const isArtifact = slotKey.includes('artifact');
+    const itemType = slotKey.replace(/[0-9]/g, '') as any;
     
     const handleSlotClick = () => {
       if (item) {
@@ -71,13 +121,23 @@ export const InventoryPanel: React.FC = () => {
       }
     };
     
+    // Para artifacts, usar el gradiente especial, para otros usar colores específicos
+    const getSlotStyle = () => {
+      if (isArtifact) {
+        return {
+          background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(251, 191, 36, 0.3) 100%)',
+          borderColor: '#eab308'
+        };
+      }
+      return getItemTypeColor(item ? item.type : itemType, !!item);
+    };
+    
     return (
       <div className="flex flex-col items-center">
         <div
           onClick={handleSlotClick}
-          className={`aspect-square border-2 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-600 ${
-            item ? getRarityColor(item.rarity) : 'border-gray-600 bg-gray-700'
-          } ${isArtifact ? 'bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border-yellow-500' : ''}`}
+          className="aspect-square border-2 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-600"
+          style={getSlotStyle()}
         >
           {item ? (
             <>
@@ -168,9 +228,8 @@ export const InventoryPanel: React.FC = () => {
               <div
                 key={index}
                 onClick={() => item && equipItem(item)}
-                className={`aspect-square border-2 rounded-lg p-1 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-600 ${
-                  item ? getRarityColor(item.rarity) : 'border-gray-600 bg-gray-700'
-                }`}
+                className="aspect-square border-2 rounded-lg p-1 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-600"
+                style={item ? getItemTypeColor(item.type, false) : { borderColor: '#6b7280', backgroundColor: '#374151' }}
               >
                 {item ? (
                   <>
