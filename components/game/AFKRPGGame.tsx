@@ -45,6 +45,21 @@ const AFKRPGGame: React.FC = () => {
     return () => clearInterval(saveInterval);
   }, []);
   
+  // Cambiar el fondo del canvas según el tab activo
+  useEffect(() => {
+    if (gameEngine) {
+      const isFullScreen = activeTab === 'map' || activeTab === 'settings';
+      gameEngine.setFullScreenMode(isFullScreen);
+      
+      // Forzar un renderizado adicional cuando cambie a MAP
+      if (activeTab === 'map') {
+        setTimeout(() => {
+          gameEngine.setFullScreenMode(true);
+        }, 100);
+      }
+    }
+  }, [activeTab, gameEngine]);
+  
   const startNewWave = () => {
     if (gameEngine) {
       gameEngine.startWave(gameStore.gameState.currentWave);
@@ -96,8 +111,8 @@ const AFKRPGGame: React.FC = () => {
       
       {/* Full Screen Content for Map and Settings */}
       {!showSidePanel && (
-        <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto bg-gray-900/90">
-          {activeTab === 'map' && <MapPanel />}
+        <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto">
+          {/* {activeTab === 'map' && <MapPanel />} */}
           {activeTab === 'settings' && <SettingsPanel />}
         </div>
       )}

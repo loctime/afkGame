@@ -10,6 +10,7 @@ export class GameEngine {
   private playerAnimations: Map<string, PIXI.Texture[]> = new Map();
   private currentAnimation: string = 'idle';
   private gameLoop: number = 0;
+  private pulseEffect: NodeJS.Timeout | null = null;
   private store: GameStore;
 
   constructor(canvas: HTMLCanvasElement, store: GameStore) {
@@ -20,7 +21,7 @@ export class GameEngine {
       view: canvas,
       width: window.innerWidth,
       height: window.innerHeight - 120, // Leave space for HUD
-      backgroundColor: 0x1a1a2e,
+      backgroundColor: 0x2a2a4a, // Fondo más claro
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
     });
@@ -46,11 +47,26 @@ export class GameEngine {
     idleAnimation.play();
     
     this.player = idleAnimation;
-    this.player.width = 64; // Ajustar tamaño si es necesario
-    this.player.height = 64;
+    this.player.width = 80; // Hacer el alien más grande
+    this.player.height = 80;
     this.player.x = this.app.screen.width / 2;
     this.player.y = this.app.screen.height / 2;
     this.player.anchor.set(0.5);
+    
+    // Aplicar efectos de color para hacerlo más brillante
+    this.player.tint = 0x44aaff; // Azul más brillante
+    this.player.alpha = 1.0; // Opacidad completa
+    
+    // Agregar filtro de brillo más potente
+    const brightnessFilter = new PIXI.ColorMatrixFilter();
+    brightnessFilter.brightness(1.8, true); // Hacer el alien 80% más brillante
+    this.player.filters = [brightnessFilter];
+    
+    // Agregar fondo circular claro detrás del alien
+    this.addPlayerBackground();
+    
+    // Agregar efecto de resplandor más potente
+    this.addGlowEffect();
     
     this.gameContainer.addChild(this.player);
     
@@ -94,6 +110,26 @@ export class GameEngine {
       this.player.textures = frames;
       this.player.play();
       this.currentAnimation = animationName;
+      
+      // Aplicar efectos de color según la animación
+      switch (animationName) {
+        case 'idle':
+          this.player.tint = 0x44aaff; // Azul brillante para idle
+          this.player.alpha = 1.0;
+          break;
+        case 'run':
+          this.player.tint = 0x00ff00; // Verde neón para ataque
+          this.player.alpha = 1.0;
+          break;
+        case 'hit':
+          this.player.tint = 0xff0000; // Rojo brillante para daño
+          this.player.alpha = 1.0;
+          break;
+        case 'dead':
+          this.player.tint = 0x888888; // Gris para muerte
+          this.player.alpha = 0.8;
+          break;
+      }
     }
   }
   
@@ -291,6 +327,8 @@ export class GameEngine {
         this.player.x = this.app.screen.width / 2;
         this.player.y = this.app.screen.height / 2;
       }
+      // Forzar renderizado después del resize
+      this.forceRender();
     });
   }
   
@@ -298,6 +336,144 @@ export class GameEngine {
     if (this.gameLoop) {
       cancelAnimationFrame(this.gameLoop);
     }
+    if (this.pulseEffect) {
+      clearInterval(this.pulseEffect);
+    }
     this.app.destroy(true);
+  }
+  
+  public setBackgroundColor(color: number) {
+    this.app.renderer.background.color = color;
+  }
+  
+  public setFullScreenMode(isFullScreen: boolean) {
+    if (isFullScreen) {
+      // Modo pantalla completa (MAP) - fondo más claro
+      this.setBackgroundColor(0x4a4a6a); // Fondo aún más claro
+      // Forzar renderizado en pantalla completa
+      this.forceRender();
+      // Activar el canvas
+      this.activateCanvas();
+      // Activar efecto de pulso para el alien
+      this.startPulseEffect();
+      // Hacer el alien más brillante
+      this.enhancePlayerVisibility();
+    } else {
+      // Modo con panel lateral - fondo más oscuro
+      this.setBackgroundColor(0x2a2a4a);
+      // Detener efecto de pulso
+      this.stopPulseEffect();
+      // Resetear brillo del alien
+      this.resetPlayerVisibility();
+    }
+  }
+  
+  private startPulseEffect() {
+    if (!this.player) return;
+    
+    // Crear un efecto de pulso sutil
+    const pulse = () => {
+      if (this.player && this.currentAnimation === 'idle') {
+        this.player.scale.x = 1.0 + Math.sin(Date.now() * 0.003) * 0.05;
+        this.player.scale.y = 1.0 + Math.sin(Date.now() * 0.003) * 0.05;
+      }
+    };
+    
+    // Agregar el efecto de pulso al game loop
+    this.pulseEffect = setInterval(pulse, 16); // ~60 FPS
+  }
+  
+  private stopPulseEffect() {
+    if (this.pulseEffect) {
+      clearInterval(this.pulseEffect);
+      this.pulseEffect = null;
+    }
+    
+    // Resetear escala del alien
+    if (this.player) {
+      this.player.scale.x = 1.0;
+      this.player.scale.y = 1.0;
+    }
+  }
+  
+  private activateCanvas() {
+    // Asegurar que el canvas esté activo y visible
+    if (this.app && this.app.view) {
+      const canvas = this.app.view as HTMLCanvasElement;
+      canvas.style.display = 'block';
+      canvas.style.visibility = 'visible';
+      canvas.style.opacity = '1';
+    }
+  }
+  
+  private forceRender() {
+    // Forzar un renderizado del canvas
+    if (this.app && this.app.renderer) {
+      this.app.renderer.render(this.app.stage);
+    }
+  }
+
+  private addGlowEffect() {
+    if (!this.player) return;
+    
+    // Crear un contenedor para el efecto de resplandor
+    const glowContainer = new PIXI.Container();
+    
+    // Crear una copia del sprite para el resplandor
+    const glowSprite = new PIXI.Sprite(this.player.texture);
+    glowSprite.width = this.player.width + 30; // Resplandor más grande
+    glowSprite.height = this.player.height + 30;
+    glowSprite.anchor.set(0.5);
+    glowSprite.tint = 0x44aaff;
+    glowSprite.alpha = 0.5; // Más opaco para mejor visibilidad
+    
+    // Agregar filtro de desenfoque para el resplandor
+    const blurFilter = new PIXI.BlurFilter(6, 6); // Más desenfoque
+    glowSprite.filters = [blurFilter];
+    
+    glowContainer.addChild(glowSprite);
+    glowContainer.x = this.player.x;
+    glowContainer.y = this.player.y;
+    
+    this.gameContainer.addChildAt(glowContainer, 0); // Agregar detrás del player
+  }
+
+  private addPlayerBackground() {
+    // Crear un círculo claro detrás del alien
+    const backgroundCircle = new PIXI.Graphics();
+    backgroundCircle.beginFill(0x5a5a7a, 0.5); // Color más claro y más opaco
+    backgroundCircle.drawCircle(0, 0, 60); // Círculo más grande que el alien
+    backgroundCircle.endFill();
+    
+    backgroundCircle.x = this.app.screen.width / 2;
+    backgroundCircle.y = this.app.screen.height / 2;
+    
+    this.gameContainer.addChildAt(backgroundCircle, 0); // Agregar al fondo
+  }
+
+  private enhancePlayerVisibility() {
+    if (!this.player) return;
+    
+    // Hacer el alien más brillante en modo MAP
+    this.player.tint = 0x66ccff; // Azul más brillante
+    this.player.alpha = 1.0;
+    
+    // Aumentar el filtro de brillo
+    const brightnessFilter = new PIXI.ColorMatrixFilter();
+    brightnessFilter.brightness(2.0, true); // Hacer el alien 100% más brillante
+    this.player.filters = [brightnessFilter];
+  }
+  
+  private resetPlayerVisibility() {
+    if (!this.player) return;
+    
+    // Resetear el alien a su brillo normal
+    this.player.tint = 0x44aaff;
+    this.player.alpha = 1.0;
+    
+    // Resetear el filtro de brillo
+    const brightnessFilter = new PIXI.ColorMatrixFilter();
+    brightnessFilter.brightness(1.8, true);
+    this.player.filters = [brightnessFilter];
   }
 }
