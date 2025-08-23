@@ -112,7 +112,11 @@ const AFKRPGGame: React.FC = () => {
       {/* Full Screen Content for Map and Settings */}
       {!showSidePanel && (
         <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto">
-          {/* {activeTab === 'map' && <MapPanel />} */}
+          {activeTab === 'map' && (
+            <div className="absolute top-4 left-4 z-10">
+              <MapPanel />
+            </div>
+          )}
           {activeTab === 'settings' && <SettingsPanel />}
         </div>
       )}
