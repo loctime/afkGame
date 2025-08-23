@@ -603,19 +603,20 @@ class GameEngine {
 // HUD Component
 const GameHUD: React.FC = () => {
   const { player, gameState, toggleAfk, startBossFight } = useGameStore();
+  const [showAreaInfo, setShowAreaInfo] = useState(false);
   
   const hpPercentage = (player.hp / player.maxHp) * 100;
   const mpPercentage = (player.mp / player.maxMp) * 100;
   const xpPercentage = (player.xp / player.xpToNext) * 100;
   
   return (
-    <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm p-4 z-50">
+    <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm p-2 z-50">
       <div className="flex items-center justify-between max-w-screen-xl mx-auto">
         {/* Player Stats */}
-        <div className="flex flex-col space-y-1">
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Heart className="w-4 h-4 text-red-500" />
-            <div className="w-20 bg-gray-700 rounded-full h-2">
+            <div className="w-16 bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-red-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${hpPercentage}%` }}
@@ -626,7 +627,7 @@ const GameHUD: React.FC = () => {
           
           <div className="flex items-center space-x-2">
             <Zap className="w-4 h-4 text-blue-500" />
-            <div className="w-20 bg-gray-700 rounded-full h-2">
+            <div className="w-16 bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${mpPercentage}%` }}
@@ -637,7 +638,7 @@ const GameHUD: React.FC = () => {
           
           <div className="flex items-center space-x-2">
             <span className="text-xs text-yellow-500">XP</span>
-            <div className="w-20 bg-gray-700 rounded-full h-2">
+            <div className="w-16 bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${xpPercentage}%` }}
@@ -647,11 +648,24 @@ const GameHUD: React.FC = () => {
           </div>
         </div>
         
-        {/* Level & Wave Info */}
-        <div className="text-center">
-          <div className="text-white font-bold">Lv.{player.level}</div>
-          <div className="text-sm text-gray-300">Wave {gameState.currentWave}</div>
-          <div className="text-xs text-yellow-500">{player.gold} Gold</div>
+        {/* Center Info */}
+        <div className="flex items-center space-x-4">
+          <div className="text-center">
+            <div className="text-white font-bold text-sm">Lv.{player.level}</div>
+            <div className="text-xs text-gray-300">{player.gold} Gold</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-white font-bold text-sm">
+              {gameState.isInBossWave ? 'BOSS' : `Wave ${gameState.currentWave}`}
+            </div>
+            <button
+              onClick={() => setShowAreaInfo(!showAreaInfo)}
+              className="text-xs text-gray-400 hover:text-white transition-colors"
+            >
+              Area Info
+            </button>
+          </div>
         </div>
         
         {/* Action Buttons */}
@@ -659,7 +673,7 @@ const GameHUD: React.FC = () => {
           {gameState.isInBossWave && !gameState.isFighting && (
             <button
               onClick={startBossFight}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold"
+              className="px-3 py-1 bg-red-600 text-white rounded text-sm font-bold"
             >
               BOSS
             </button>
@@ -667,7 +681,7 @@ const GameHUD: React.FC = () => {
           
           <button
             onClick={toggleAfk}
-            className={`px-4 py-2 rounded-lg text-sm font-bold ${
+            className={`px-3 py-1 rounded text-sm font-bold ${
               gameState.isAfk 
                 ? 'bg-green-600 text-white' 
                 : 'bg-gray-600 text-gray-300'
@@ -677,6 +691,57 @@ const GameHUD: React.FC = () => {
           </button>
         </div>
       </div>
+      
+      {/* Area Info Dropdown */}
+      {showAreaInfo && (
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-600 z-50">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-white font-semibold text-sm">Darkwood Forest</h4>
+              <span className="text-xs text-gray-400">Lv. 1-50</span>
+            </div>
+            
+            <div className="text-xs text-gray-300 mb-2">
+              A mysterious forest filled with goblins and other creatures.
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-gray-400">Wave:</span>
+                <span className="text-white ml-1 font-bold">{gameState.currentWave}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">Phase:</span>
+                <span className="text-white ml-1 font-bold">{Math.floor((gameState.currentWave - 1) / 10) + 1}</span>
+              </div>
+              <div>
+                <span className="text-gray-400">Status:</span>
+                <span className={`ml-1 font-bold ${gameState.isAfk ? 'text-green-400' : 'text-red-400'}`}>
+                  {gameState.isAfk ? 'Farming' : 'Idle'}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-400">Enemies:</span>
+                <span className="text-white ml-1 font-bold">{useGameStore.getState().renderState.enemies.length}</span>
+              </div>
+            </div>
+            
+            {gameState.isInBossWave && (
+              <div className="mt-2 p-1 bg-red-900/20 border border-red-500 rounded text-xs">
+                <div className="text-red-400 font-bold">⚠️ Boss Wave Available!</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Click outside to close dropdown */}
+      {showAreaInfo && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowAreaInfo(false)}
+        />
+      )}
     </div>
   );
 };
@@ -775,6 +840,7 @@ const AFKRPGGame: React.FC = () => {
   const [gameEngine, setGameEngine] = useState<GameEngine | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const gameStore = useGameStore();
+  const { gameState } = useGameStore();
   
   useEffect(() => {
     // Load saved game on mount
@@ -817,12 +883,12 @@ const AFKRPGGame: React.FC = () => {
       {/* PIXI.js Canvas */}
       <canvas
         ref={canvasRef}
-        className="absolute top-16 left-0 w-full"
+        className="absolute top-12 left-0 w-full"
         style={{ height: 'calc(100vh - 120px)' }}
       />
       
       {/* Game Controls Overlay */}
-      <div className="absolute top-20 right-4 z-40">
+      <div className="absolute top-16 right-4 z-40">
         <button
           onClick={startNewWave}
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold mb-2"
@@ -832,7 +898,7 @@ const AFKRPGGame: React.FC = () => {
       </div>
       
       {/* Tab Content */}
-      <div className="absolute top-16 left-0 right-0 bottom-16 overflow-y-auto bg-gray-900/90">
+      <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto bg-gray-900/90">
         {activeTab === 'character' && <CharacterPanel />}
         {activeTab === 'inventory' && <InventoryPanel />}
         {activeTab === 'map' && <MapPanel />}
@@ -970,77 +1036,38 @@ const MapPanel: React.FC = () => {
   const { gameState } = useGameStore();
   
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4">
       <div className="bg-gray-800 rounded-lg p-4">
-        <h3 className="text-white font-bold mb-4">Current Area</h3>
+        <h3 className="text-white font-bold mb-4">Game Info</h3>
         
         <div className="space-y-4">
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-white font-semibold">Darkwood Forest</h4>
-              <span className="text-sm text-gray-400">Lv. 1-50</span>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-400">Current Phase:</span>
+              <span className="text-white ml-2 font-bold">{Math.floor((gameState.currentWave - 1) / 10) + 1}</span>
             </div>
-            
-            <div className="text-sm text-gray-300 mb-3">
-              A mysterious forest filled with goblins and other creatures. 
-              Perfect for beginning adventurers.
+            <div>
+              <span className="text-gray-400">Total Waves:</span>
+              <span className="text-white ml-2 font-bold">{gameState.currentWave}</span>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Current Wave:</span>
-                <span className="text-white ml-2 font-bold">{gameState.currentWave}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Phase:</span>
-                <span className="text-white ml-2 font-bold">{Math.floor((gameState.currentWave - 1) / 10) + 1}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Status:</span>
-                <span className={`ml-2 font-bold ${gameState.isAfk ? 'text-green-400' : 'text-red-400'}`}>
-                  {gameState.isAfk ? 'Farming' : 'Idle'}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-400">Enemies:</span>
-                <span className="text-white ml-2 font-bold">{useGameStore.getState().renderState.enemies.length}</span>
-              </div>
+            <div>
+              <span className="text-gray-400">Status:</span>
+              <span className={`ml-2 font-bold ${gameState.isAfk ? 'text-green-400' : 'text-red-400'}`}>
+                {gameState.isAfk ? 'Farming' : 'Idle'}
+              </span>
             </div>
-            
-            {gameState.isInBossWave && (
-              <div className="mt-3 p-2 bg-red-900/20 border border-red-500 rounded-lg">
-                <div className="text-red-400 text-sm font-bold">⚠️ Boss Wave Available!</div>
-                <div className="text-red-300 text-xs">Defeat the boss to advance to the next phase.</div>
-              </div>
-            )}
+            <div>
+              <span className="text-gray-400">Enemies:</span>
+              <span className="text-white ml-2 font-bold">{useGameStore.getState().renderState.enemies.length}</span>
+            </div>
           </div>
           
-          {/* Wave Progress */}
-          <div className="bg-gray-700 rounded-lg p-4">
-            <h4 className="text-white font-semibold mb-3">Wave Progress</h4>
-            
-            <div className="space-y-2">
-              {Array.from({ length: 10 }, (_, i) => {
-                const waveNum = Math.floor((gameState.currentWave - 1) / 10) * 10 + i + 1;
-                const isCompleted = waveNum < gameState.currentWave;
-                const isCurrent = waveNum === gameState.currentWave;
-                const isBoss = (i + 1) % 10 === 0;
-                
-                return (
-                  <div key={i} className="flex items-center space-x-2">
-                    <div className={`w-4 h-4 rounded-full ${
-                      isCompleted ? 'bg-green-500' : isCurrent ? 'bg-yellow-500' : 'bg-gray-600'
-                    }`} />
-                    <span className={`text-sm ${
-                      isCurrent ? 'text-yellow-400 font-bold' : isCompleted ? 'text-green-400' : 'text-gray-400'
-                    }`}>
-                      Wave {waveNum} {isBoss ? '(BOSS)' : ''}
-                    </span>
-                  </div>
-                );
-              })}
+          {gameState.isInBossWave && (
+            <div className="p-3 bg-red-900/20 border border-red-500 rounded-lg">
+              <div className="text-red-400 text-sm font-bold">⚠️ Boss Wave Available!</div>
+              <div className="text-red-300 text-xs">Defeat the boss to advance to the next phase.</div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

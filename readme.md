@@ -1,242 +1,173 @@
-# Archivos necesarios para el proyecto Next.js completo
+# 🎮 AFK RPG Game
 
-## 📁 Estructura del proyecto:
-```
-afk-rpg-game/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/
-│   └── AFKRPGGame.tsx (el archivo principal)
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-├── postcss.config.js
-└── next.config.js
-```
+Un juego RPG automático infinito construido con Next.js 14, PixiJS y TypeScript.
 
-## 📄 **1. app/layout.tsx**
-```tsx
-import type { Metadata } from 'next';
-import './globals.css';
+## 🚀 Características
 
-export const metadata: Metadata = {
-  title: 'AFK RPG Game',
-  description: 'Un juego RPG automático increíble',
-};
+- **Sistema AFK**: Combate automático con recompensas offline
+- **Progresión Infinita**: Oleadas de enemigos + Bosses cada 10 niveles
+- **Inventario Completo**: Armas, armaduras, runas y mascotas
+- **Sistema de Stats**: STR, DEX, INT, VIT con puntos distribuibles
+- **Persistencia Local**: Guardado automático con IndexedDB
+- **Responsive Mobile**: Optimizado para dispositivos móviles
+- **Bajo Consumo**: Renderizado eficiente con PixiJS
+- **Interfaz Compacta**: Información del área en dropdown para mejor uso del espacio
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="es">
-      <body className="antialiased">
-        {children}
-      </body>
-    </html>
-  );
-}
-```
+## 🎯 Gameplay
 
-## 📄 **2. app/page.tsx**
-```tsx
-import AFKRPGGame from '../components/AFKRPGGame';
+### Sistema de Oleadas
+- **Oleadas 1-9**: Enemigos automáticos
+- **Oleada 10**: Boss (botón manual)
+- **Oleadas 11-19**: Enemigos automáticos
+- **Oleada 20**: Boss (botón manual)
+- **Progresión**: Si ganas boss → siguiente rango, si pierdes → reset al inicio del rango
 
-export default function Home() {
-  return <AFKRPGGame />;
-}
-```
+### Progresión del Jugador
+- **Niveles Infinitos**: XP acumulativa
+- **Stats Distribuibles**: STR, DEX, INT, VIT
+- **Reset System**: -100 niveles manteniendo stats asignados
+- **Equipamiento**: Arma, armadura, 3 runas
+- **Mascotas**: Sistema de compañeros
 
-## 📄 **3. app/globals.css**
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+## 🛠️ Tecnologías
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+- **Next.js 14**: Framework React con App Router
+- **PixiJS 7**: Motor gráfico 2D para sprites y animaciones
+- **Zustand**: Estado global del juego
+- **TypeScript**: Tipado estático
+- **Tailwind CSS**: Estilos responsive
+- **IndexedDB**: Persistencia local robusta
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 26, 26, 46;
-  --background-end-rgb: 17, 17, 35;
-}
-
-/* Disable text selection for game elements */
-.select-none {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-/* Custom scrollbar for mobile */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1f2937;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 2px;
-}
-```
-
-## 📄 **4. tsconfig.json**
-```json
-{
-  "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "es6"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
-```
-
-## 📄 **5. tailwind.config.js**
-```javascript
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  theme: {
-    extend: {
-      fontFamily: {
-        mono: ['Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'monospace'],
-      },
-      colors: {
-        primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
-        },
-        gray: {
-          800: '#1f2937',
-          900: '#111827',
-        },
-      },
-    },
-  },
-  plugins: [],
-}
-```
-
-## 📄 **6. postcss.config.js**
-```javascript
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
-```
-
-## 📄 **7. next.config.js**
-```javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-  webpack: (config) => {
-    // Configuración para PIXI.js
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-    };
-    return config;
-  },
-}
-
-module.exports = nextConfig
-```
-
-## 🚀 **Comandos para crear el proyecto:**
+## 📦 Instalación
 
 ```bash
-# 1. Crear directorio y archivos
-mkdir afk-rpg-game
+# Clonar el repositorio
+git clone <tu-repo>
 cd afk-rpg-game
 
-# 2. Inicializar package.json
-npm init -y
+# Instalar dependencias
+npm install
 
-# 3. Instalar dependencias
-npm install next@14.0.0 react@^18.2.0 react-dom@^18.2.0 typescript@^5.2.2
-
-# 4. Instalar dependencias adicionales
-npm install pixi.js@^7.3.2 zustand@^4.4.7 idb-keyval@^6.2.1 lucide-react@^0.294.0
-
-# 5. Instalar Tailwind
-npm install -D tailwindcss@^3.3.0 postcss@^8.4.31 autoprefixer@^10.4.16
-
-# 6. Configurar Tailwind
-npx tailwindcss init -p
-
-# 7. Crear estructura de carpetas
-mkdir -p app components
-
-# 8. Crear los archivos de configuración
-# (copiar el contenido de arriba en cada archivo)
-
-# 9. Ejecutar
+# Ejecutar en desarrollo
 npm run dev
+
+# Construir para producción
+npm run build
+
+# Ejecutar en producción
+npm start
 ```
 
-## ⚡ **Opción Rápida - Solo copia estos archivos:**
-1. **package.json** (ya lo tienes)
-2. **El componente principal** (ya lo tienes) 
-3. Los **6 archivos de configuración** de arriba
+## 🎮 Cómo Jugar
 
-¿Quieres que te genere una versión simplificada que funcione con menos archivos, o prefieres tener la estructura completa de Next.js? 🤔
+1. **Iniciar Combate**: Presiona "Start Wave" para comenzar
+2. **Modo AFK**: Activa "AFK ON" para combate automático
+3. **Gestionar Stats**: Usa puntos de habilidad en la pestaña "Character"
+4. **Equipar Items**: Gestiona inventario en la pestaña "Inventory"
+5. **Luchar Bosses**: Presiona "BOSS" cuando aparezca para enfrentar al jefe
+
+## 📁 Estructura del Proyecto
+
+```
+afk-rpg-game/
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # Layout principal
+│   ├── page.tsx           # Página principal
+│   └── globals.css        # Estilos globales
+├── components/            # Componentes React
+│   └── AFKRPGGame.tsx     # Componente principal del juego
+├── core/                  # Lógica del juego (futuro)
+│   ├── systems/           # Sistemas: combat, xp, drops
+│   ├── entities/          # Entidades: player, enemy, item
+│   └── balance/           # Configuración de balance
+├── assets/                # Sprites y recursos (futuro)
+└── public/                # Archivos estáticos
+```
+
+## 🔧 Configuración
+
+### Variables de Entorno
+```env
+# No se requieren variables de entorno para el MVP
+```
+
+### Personalización
+- **Balance**: Edita las constantes en el componente principal
+- **Sprites**: Reemplaza los placeholders con sprites reales
+- **Sonidos**: Agrega efectos de sonido (futuro)
+
+## 🚀 Roadmap
+
+### Fase 1: MVP (✅ Completado)
+- [x] Sistema de combate básico
+- [x] Progresión de oleadas
+- [x] UI responsive
+- [x] Persistencia local
+
+### Fase 2: Características Avanzadas
+- [ ] Sistema de mascotas
+- [ ] Habilidades especiales
+- [ ] Múltiples mapas
+- [ ] Sistema de logros
+
+### Fase 3: Polish & Optimización
+- [ ] Sprites pixel-art
+- [ ] Efectos de partículas
+- [ ] Sonidos y música
+- [ ] Animaciones fluidas
+
+### Fase 4: Multiplayer (Futuro)
+- [ ] Servidor de ticks
+- [ ] Sincronización entre dispositivos
+- [ ] Rankings y competencia
+- [ ] Anti-cheat
+
+## 🐛 Troubleshooting
+
+### Problemas Comunes
+
+**Error de PixiJS en desarrollo:**
+```bash
+# Asegúrate de que el navegador soporte WebGL
+# Verifica la consola para errores específicos
+```
+
+**Error de estructura circular en JSON:**
+```bash
+# El estado de renderizado (renderState) está separado del estado serializable
+# Los objetos de PIXI.js no se guardan para evitar referencias circulares
+```
+
+**Problemas de rendimiento en móvil:**
+```bash
+# Reduce la resolución en dispositivos low-end
+# Desactiva efectos visuales pesados
+```
+
+**Problemas de guardado:**
+```bash
+# Verifica que IndexedDB esté habilitado
+# Limpia el almacenamiento del navegador si es necesario
+```
+
+## 📝 Licencia
+
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📞 Soporte
+
+Si tienes problemas o sugerencias:
+- Abre un issue en GitHub
+- Contacta al desarrollador principal
+
+---
+
+**¡Disfruta jugando AFK RPG! 🎮✨**
