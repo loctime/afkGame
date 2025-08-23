@@ -26,6 +26,7 @@ export interface GameStore {
   equipment: Equipment;
   addItem: (item: Item) => void;
   equipItem: (item: Item) => void;
+  unequipItem: (slotKey: keyof Equipment) => void;
   
   // Persistence
   saveGame: () => Promise<void>;
@@ -302,6 +303,21 @@ export const useGameStore = create<GameStore>()(
             break;
         }
         
+        return {
+          inventory: newInventory,
+          equipment: newEquipment,
+        };
+      }),
+      
+      unequipItem: (slotKey) => set((state) => {
+        const newInventory = [...state.inventory];
+        const newEquipment = { ...state.equipment };
+
+        if (newEquipment[slotKey]) {
+          newInventory.push(newEquipment[slotKey]);
+          newEquipment[slotKey] = undefined;
+        }
+
         return {
           inventory: newInventory,
           equipment: newEquipment,

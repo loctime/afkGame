@@ -4,7 +4,7 @@ import { useGameStore } from '../../stores/gameStore';
 import { Item } from '../../types/game';
 
 export const InventoryPanel: React.FC = () => {
-  const { inventory, equipment, equipItem } = useGameStore();
+  const { inventory, equipment, equipItem, unequipItem } = useGameStore();
   
   const getRarityColor = (rarity: string) => {
     const colors = {
@@ -60,26 +60,39 @@ export const InventoryPanel: React.FC = () => {
     return labels[slotKey as keyof typeof labels] || 'Slot';
   };
   
-  const renderEquipmentSlot = (slotKey: keyof typeof equipment, item?: Item) => {
+  const renderEquipmentSlot = (slotKey: keyof typeof equipment, item?: Item, isSpecial = false) => {
     const Icon = item ? getItemIcon(item.type) : getItemIcon(slotKey.replace(/[0-9]/g, '') as any);
     const isArtifact = slotKey.includes('artifact');
     
+    const handleSlotClick = () => {
+      if (item) {
+        // Si hay un item equipado, desequiparlo
+        unequipItem(slotKey);
+      }
+    };
+    
     return (
-      <div
-        className={`aspect-square border-2 rounded-lg p-1 flex flex-col items-center justify-center ${
-          item ? getRarityColor(item.rarity) : 'border-gray-600 bg-gray-700'
-        } ${isArtifact ? 'bg-gradient-to-br from-yellow-900/30 to-orange-900/30' : ''}`}
-      >
-        {item ? (
-          <>
-            <Icon className="w-5 h-5 text-white mb-1" />
-            <span className="text-xs text-white text-center leading-tight">{item.name}</span>
-          </>
-        ) : (
-          <>
-            <Icon className="w-5 h-5 text-gray-400 mb-1" />
-            <span className="text-xs text-gray-400 text-center leading-tight">{getSlotLabel(slotKey)}</span>
-          </>
+      <div className="flex flex-col items-center">
+        <div
+          onClick={handleSlotClick}
+          className={`aspect-square border-2 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-600 ${
+            item ? getRarityColor(item.rarity) : 'border-gray-600 bg-gray-700'
+          } ${isArtifact ? 'bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border-yellow-500' : ''}`}
+        >
+          {item ? (
+            <>
+              <Icon className="w-6 h-6 text-white mb-1" />
+              <span className="text-xs text-white text-center leading-tight">{item.name}</span>
+            </>
+          ) : (
+            <>
+              <Icon className="w-6 h-6 text-gray-400 mb-1" />
+              <span className="text-xs text-gray-400 text-center leading-tight">{getSlotLabel(slotKey)}</span>
+            </>
+          )}
+        </div>
+        {isSpecial && (
+          <span className="text-xs text-gray-400 mt-1">Artifact</span>
         )}
       </div>
     );
@@ -88,19 +101,22 @@ export const InventoryPanel: React.FC = () => {
   return (
     <div className="p-3 space-y-3">
       {/* Equipment Section */}
-      <div className="bg-gray-800 rounded-lg p-3">
-        <h3 className="text-white font-bold mb-3 text-sm">Equipment</h3>
+      <div className="bg-gray-800 rounded-lg p-4">
+        <h3 className="text-white font-bold mb-4 text-sm">Equipment</h3>
         
-        {/* Primera fila: Pet, Necklace, Helmet, Wings */}
-        <div className="grid grid-cols-4 gap-2 mb-2">
+        {/* Primera fila: Pet, Necklace, Helmet, Wings, (vacío) */}
+        <div className="grid grid-cols-5 gap-3 mb-3">
           {renderEquipmentSlot('pet', equipment.pet)}
           {renderEquipmentSlot('necklace', equipment.necklace)}
           {renderEquipmentSlot('helmet', equipment.helmet)}
           {renderEquipmentSlot('wings', equipment.wings)}
+          <div className="aspect-square border-2 border-gray-600 bg-gray-700 rounded-lg p-2 flex flex-col items-center justify-center">
+            <div className="w-6 h-6 border border-gray-500 border-dashed rounded" />
+          </div>
         </div>
         
         {/* Segunda fila: Weapon, Bracelet1, Chest, Bracelet2, Shield */}
-        <div className="grid grid-cols-5 gap-2 mb-2">
+        <div className="grid grid-cols-5 gap-3 mb-3">
           {renderEquipmentSlot('weapon', equipment.weapon)}
           {renderEquipmentSlot('bracelet1', equipment.bracelet1)}
           {renderEquipmentSlot('chest', equipment.chest)}
@@ -109,7 +125,7 @@ export const InventoryPanel: React.FC = () => {
         </div>
         
         {/* Tercera fila: Gloves, Ring1, Pants, Ring2, Boots */}
-        <div className="grid grid-cols-5 gap-2 mb-2">
+        <div className="grid grid-cols-5 gap-3 mb-3">
           {renderEquipmentSlot('gloves', equipment.gloves)}
           {renderEquipmentSlot('ring1', equipment.ring1)}
           {renderEquipmentSlot('pants', equipment.pants)}
@@ -117,10 +133,19 @@ export const InventoryPanel: React.FC = () => {
           {renderEquipmentSlot('boots', equipment.boots)}
         </div>
         
-        {/* Cuarta fila: Artifact1, Artifact2 */}
-        <div className="grid grid-cols-2 gap-2">
-          {renderEquipmentSlot('artifact1', equipment.artifact1)}
-          {renderEquipmentSlot('artifact2', equipment.artifact2)}
+        {/* Cuarta fila: Artifact1, (vacío), (vacío), (vacío), Artifact2 */}
+        <div className="grid grid-cols-5 gap-3">
+          {renderEquipmentSlot('artifact1', equipment.artifact1, true)}
+          <div className="aspect-square border-2 border-gray-600 bg-gray-700 rounded-lg p-2 flex flex-col items-center justify-center">
+            <div className="w-6 h-6 border border-gray-500 border-dashed rounded" />
+          </div>
+          <div className="aspect-square border-2 border-gray-600 bg-gray-700 rounded-lg p-2 flex flex-col items-center justify-center">
+            <div className="w-6 h-6 border border-gray-500 border-dashed rounded" />
+          </div>
+          <div className="aspect-square border-2 border-gray-600 bg-gray-700 rounded-lg p-2 flex flex-col items-center justify-center">
+            <div className="w-6 h-6 border border-gray-500 border-dashed rounded" />
+          </div>
+          {renderEquipmentSlot('artifact2', equipment.artifact2, true)}
         </div>
       </div>
       
