@@ -324,19 +324,20 @@ export class GameEngine {
     const gameState = this.store.gameState;
     const player = this.store.player;
     
+    // Actualizar cooldowns de skills
+    this.store.updateSkillCooldowns(deltaTime);
+    
     // Simple combat simulation
     if (this.store.renderState.enemies.length > 0 && Math.random() < deltaTime) {
       const enemy = this.store.renderState.enemies[0];
       
-      // Player attacks enemy - Mostrar animación de ataque
-      this.changePlayerAnimation('run');
-      const playerDamage = 20 + (player.stats.str * 2);
-      enemy.hp -= playerDamage;
+      // Intentar usar skills automáticamente
+      const skillUsed = this.tryUseSkill(enemy);
       
-      // Volver a idle después del ataque
-      setTimeout(() => {
-        this.changePlayerAnimation('idle');
-      }, 200);
+      if (!skillUsed) {
+        // Usar ataque básico si no se usó ningún skill
+        this.useBasicAttack(enemy);
+      }
       
       if (enemy.hp <= 0) {
         // Enemy defeated
@@ -369,6 +370,54 @@ export class GameEngine {
           this.gameOver();
         }
       }
+    }
+  }
+
+  private tryUseSkill(enemy: Enemy): boolean {
+    const skills = this.store.skills;
+    const player = this.store.player;
+    
+    // Priorizar skills de curación si la salud está baja
+    if (player.hp < player.maxHp * 0.3) {
+      const healSkill = skills.find(s => s.type === 'heal' && s.currentCooldown === 0);
+      if (healSkill && player.mp >= healSkill.manaCost) {
+        this.store.useSkill(healSkill.id);
+        this.changePlayerAnimation('run');
+        setTimeout(() => {
+          this.changePlayerAnimation('idle');
+        }, 300);
+        return true;
+      }
+    }
+    
+    // Usar skills de ataque si hay mana disponible
+    const attackSkill = skills.find(s => s.type === 'attack' && s.currentCooldown === 0 && s.id !== 'basic_attack');
+    if (attackSkill && player.mp >= attackSkill.manaCost) {
+      this.store.useSkill(attackSkill.id);
+      const skillDamage = attackSkill.damage || 0;
+      enemy.hp -= skillDamage;
+      
+      this.changePlayerAnimation('run');
+      setTimeout(() => {
+        this.changePlayerAnimation('idle');
+      }, 300);
+      return true;
+    }
+    
+    return false;
+  }
+
+  private useBasicAttack(enemy: Enemy) {
+    const basicAttack = this.store.skills.find(s => s.id === 'basic_attack');
+    if (basicAttack) {
+      this.store.useSkill(basicAttack.id);
+      const playerDamage = (basicAttack.damage || 0) + (this.store.player.stats.str * 2);
+      enemy.hp -= playerDamage;
+      
+      this.changePlayerAnimation('run');
+      setTimeout(() => {
+        this.changePlayerAnimation('idle');
+      }, 200);
     }
   }
   

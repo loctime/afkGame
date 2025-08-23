@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import { Stats } from '../../types/game';
+import { SkillsPanel } from '../ui/SkillsPanel';
 
 export const CharacterPanel: React.FC = () => {
   const { player, updatePlayerStats } = useGameStore();
@@ -51,6 +52,9 @@ export const CharacterPanel: React.FC = () => {
           ))}
         </div>
       </div>
+      
+      {/* Skills Panel */}
+      <SkillsPanel />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { get as getFromDB, set as setToDB, del as delFromDB } from 'idb-keyval';
-import { Player, Stats, GameState, RenderState, Item, Equipment } from '../types/game';
+import { Player, Stats, GameState, RenderState, Item, Equipment, Skill } from '../types/game';
 
 export interface GameStore {
   // Player
@@ -28,6 +28,13 @@ export interface GameStore {
   equipItem: (item: Item) => void;
   unequipItem: (slotKey: keyof Equipment) => void;
   autoEquipAll: () => void;
+  
+  // Skills
+  skills: Skill[];
+  addSkill: (skill: Skill) => void;
+  upgradeSkill: (skillId: string) => void;
+  useSkill: (skillId: string) => boolean;
+  updateSkillCooldowns: (deltaTime: number) => void;
   
   // Persistence
   saveGame: () => Promise<void>;
@@ -202,6 +209,49 @@ export const useGameStore = create<GameStore>()(
         artifact1: undefined,
         artifact2: undefined,
       },
+      
+      // Skills
+      skills: [
+        {
+          id: 'basic_attack',
+          name: 'Ataque Básico',
+          icon: '/assets/skills/Icon1.png',
+          type: 'attack',
+          damage: 25,
+          manaCost: 0,
+          cooldown: 0,
+          currentCooldown: 0,
+          description: 'Un ataque básico con tu arma',
+          level: 1,
+          maxLevel: 10
+        },
+        {
+          id: 'fire_ball',
+          name: 'Bola de Fuego',
+          icon: '/assets/skills/Icon2.png',
+          type: 'attack',
+          damage: 50,
+          manaCost: 20,
+          cooldown: 3,
+          currentCooldown: 0,
+          description: 'Lanza una bola de fuego que quema a los enemigos',
+          level: 1,
+          maxLevel: 5
+        },
+        {
+          id: 'heal',
+          name: 'Curación',
+          icon: '/assets/skills/Icon3.png',
+          type: 'heal',
+          heal: 30,
+          manaCost: 25,
+          cooldown: 5,
+          currentCooldown: 0,
+          description: 'Restaura tu salud',
+          level: 1,
+          maxLevel: 5
+        }
+      ],
       
       addItem: (item) => set((state) => ({
         inventory: [...state.inventory, item]
@@ -409,6 +459,80 @@ export const useGameStore = create<GameStore>()(
         };
       }),
       
+      // Skills
+      addSkill: (skill) => set((state) => ({
+        skills: [...state.skills, skill]
+      })),
+      
+      upgradeSkill: (skillId) => set((state) => {
+        const skillIndex = state.skills.findIndex(s => s.id === skillId);
+        if (skillIndex === -1) return {};
+        
+        const skill = state.skills[skillIndex];
+        if (skill.level >= skill.maxLevel) return {};
+        
+        const newSkills = [...state.skills];
+        newSkills[skillIndex] = {
+          ...skill,
+          level: skill.level + 1,
+          damage: skill.damage ? skill.damage + (skill.damage * 0.2) : skill.damage,
+          heal: skill.heal ? skill.heal + (skill.heal * 0.2) : skill.heal,
+          manaCost: skill.manaCost + (skill.manaCost * 0.1)
+        };
+        
+        return { skills: newSkills };
+      }),
+      
+      useSkill: (skillId) => {
+        const state = get();
+        const skill = state.skills.find(s => s.id === skillId);
+        if (!skill || skill.currentCooldown > 0) return false;
+        
+        if (state.player.mp < skill.manaCost) return false;
+        
+        set((state) => {
+          const skillIndex = state.skills.findIndex(s => s.id === skillId);
+          if (skillIndex === -1) return {};
+          
+          const newSkills = [...state.skills];
+          newSkills[skillIndex] = {
+            ...skill,
+            currentCooldown: skill.cooldown
+          };
+          
+          let playerUpdate = {
+            mp: state.player.mp - skill.manaCost
+          };
+          
+          // Aplicar efectos del skill
+          if (skill.type === 'heal' && skill.heal) {
+            playerUpdate = {
+              ...playerUpdate,
+              hp: Math.min(state.player.maxHp, state.player.hp + skill.heal)
+            };
+          }
+          
+          return {
+            skills: newSkills,
+            player: {
+              ...state.player,
+              ...playerUpdate
+            }
+          };
+        });
+        
+        return true;
+      },
+      
+      updateSkillCooldowns: (deltaTime) => set((state) => {
+        const newSkills = state.skills.map(skill => ({
+          ...skill,
+          currentCooldown: Math.max(0, skill.currentCooldown - deltaTime)
+        }));
+        
+        return { skills: newSkills };
+      }),
+      
       // Persistence
       saveGame: async () => {
         const state = get();
@@ -417,6 +541,7 @@ export const useGameStore = create<GameStore>()(
           gameState: { ...state.gameState, lastPlayTime: Date.now() },
           inventory: state.inventory,
           equipment: state.equipment,
+          skills: state.skills,
         });
       },
       
@@ -428,6 +553,47 @@ export const useGameStore = create<GameStore>()(
               player: savedData.player,
               gameState: savedData.gameState,
               inventory: savedData.inventory || [],
+              skills: savedData.skills || [
+                {
+                  id: 'basic_attack',
+                  name: 'Ataque Básico',
+                  icon: '/assets/skills/Icon1.png',
+                  type: 'attack',
+                  damage: 25,
+                  manaCost: 0,
+                  cooldown: 0,
+                  currentCooldown: 0,
+                  description: 'Un ataque básico con tu arma',
+                  level: 1,
+                  maxLevel: 10
+                },
+                {
+                  id: 'fire_ball',
+                  name: 'Bola de Fuego',
+                  icon: '/assets/skills/Icon2.png',
+                  type: 'attack',
+                  damage: 50,
+                  manaCost: 20,
+                  cooldown: 3,
+                  currentCooldown: 0,
+                  description: 'Lanza una bola de fuego que quema a los enemigos',
+                  level: 1,
+                  maxLevel: 5
+                },
+                {
+                  id: 'heal',
+                  name: 'Curación',
+                  icon: '/assets/skills/Icon3.png',
+                  type: 'heal',
+                  heal: 30,
+                  manaCost: 25,
+                  cooldown: 5,
+                  currentCooldown: 0,
+                  description: 'Restaura tu salud',
+                  level: 1,
+                  maxLevel: 5
+                }
+              ],
               equipment: savedData.equipment || {
                 // Primera fila
                 pet: undefined,

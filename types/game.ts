@@ -59,6 +59,21 @@ export interface RenderState {
   enemies: Enemy[];
 }
 
+export interface Skill {
+  id: string;
+  name: string;
+  icon: string;
+  type: 'attack' | 'buff' | 'heal' | 'debuff';
+  damage?: number;
+  heal?: number;
+  manaCost: number;
+  cooldown: number;
+  currentCooldown: number;
+  description: string;
+  level: number;
+  maxLevel: number;
+}
+
 export interface Equipment {
   // Primera fila
   pet?: Item;           // demonio/hada
