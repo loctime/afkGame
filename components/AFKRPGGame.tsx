@@ -601,7 +601,7 @@ class GameEngine {
 // =============================================================================
 
 // HUD Component
-const GameHUD: React.FC = () => {
+const GameHUD: React.FC<{ startNewWave: () => void }> = ({ startNewWave }) => {
   const { player, gameState, toggleAfk, startBossFight } = useGameStore();
   const [showAreaInfo, setShowAreaInfo] = useState(false);
   
@@ -666,6 +666,13 @@ const GameHUD: React.FC = () => {
               Area Info
             </button>
           </div>
+          
+          <button
+            onClick={startNewWave}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm font-bold"
+          >
+            Start Wave
+          </button>
         </div>
         
         {/* Action Buttons */}
@@ -878,7 +885,7 @@ const AFKRPGGame: React.FC = () => {
   return (
     <div className="w-full h-screen bg-gray-900 relative overflow-hidden">
       {/* Game HUD */}
-      <GameHUD />
+      <GameHUD startNewWave={startNewWave} />
       
       {/* PIXI.js Canvas */}
       <canvas
@@ -887,15 +894,7 @@ const AFKRPGGame: React.FC = () => {
         style={{ height: 'calc(100vh - 120px)' }}
       />
       
-      {/* Game Controls Overlay */}
-      <div className="absolute top-16 right-4 z-40">
-        <button
-          onClick={startNewWave}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold mb-2"
-        >
-          Start Wave
-        </button>
-      </div>
+
       
       {/* Tab Content */}
       <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto bg-gray-900/90">
