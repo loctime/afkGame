@@ -27,6 +27,7 @@ export interface GameStore {
   addItem: (item: Item) => void;
   equipItem: (item: Item) => void;
   unequipItem: (slotKey: keyof Equipment) => void;
+  autoEquipAll: () => void;
   
   // Persistence
   saveGame: () => Promise<void>;
@@ -318,6 +319,89 @@ export const useGameStore = create<GameStore>()(
           newEquipment[slotKey] = undefined;
         }
 
+        return {
+          inventory: newInventory,
+          equipment: newEquipment,
+        };
+      }),
+
+      autoEquipAll: () => set((state) => {
+        const newInventory = [...state.inventory];
+        const newEquipment = { ...state.equipment };
+        
+        // Ordenar items por rareza (legendary > epic > rare > common)
+        const rarityOrder = { legendary: 4, epic: 3, rare: 2, common: 1 };
+        const sortedItems = newInventory.sort((a, b) => 
+          (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0) - 
+          (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0)
+        );
+        
+        // Intentar equipar cada item
+        sortedItems.forEach(item => {
+          const equipToSlot = (slotKey: keyof Equipment) => {
+            if (!newEquipment[slotKey]) {
+              newEquipment[slotKey] = item;
+              return true; // Equipado exitosamente
+            }
+            return false; // Slot ocupado
+          };
+          
+          let equipped = false;
+          
+          switch (item.type) {
+            case 'weapon':
+              equipped = equipToSlot('weapon');
+              break;
+            case 'chest':
+              equipped = equipToSlot('chest');
+              break;
+            case 'helmet':
+              equipped = equipToSlot('helmet');
+              break;
+            case 'necklace':
+              equipped = equipToSlot('necklace');
+              break;
+            case 'wings':
+              equipped = equipToSlot('wings');
+              break;
+            case 'bracelet':
+              if (!equipped) equipped = equipToSlot('bracelet1');
+              if (!equipped) equipped = equipToSlot('bracelet2');
+              break;
+            case 'shield':
+              equipped = equipToSlot('shield');
+              break;
+            case 'gloves':
+              equipped = equipToSlot('gloves');
+              break;
+            case 'ring':
+              if (!equipped) equipped = equipToSlot('ring1');
+              if (!equipped) equipped = equipToSlot('ring2');
+              break;
+            case 'pants':
+              equipped = equipToSlot('pants');
+              break;
+            case 'boots':
+              equipped = equipToSlot('boots');
+              break;
+            case 'artifact':
+              if (!equipped) equipped = equipToSlot('artifact1');
+              if (!equipped) equipped = equipToSlot('artifact2');
+              break;
+            case 'pet':
+              equipped = equipToSlot('pet');
+              break;
+          }
+          
+          // Si se equipó, remover del inventario
+          if (equipped) {
+            const index = newInventory.findIndex(i => i.id === item.id);
+            if (index !== -1) {
+              newInventory.splice(index, 1);
+            }
+          }
+        });
+        
         return {
           inventory: newInventory,
           equipment: newEquipment,

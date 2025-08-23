@@ -4,7 +4,7 @@ import { useGameStore } from '../../stores/gameStore';
 import { Item } from '../../types/game';
 
 export const InventoryPanel: React.FC = () => {
-  const { inventory, equipment, equipItem, unequipItem } = useGameStore();
+  const { inventory, equipment, equipItem, unequipItem, autoEquipAll } = useGameStore();
   
   const getRarityColor = (rarity: string) => {
     const colors = {
@@ -82,18 +82,16 @@ export const InventoryPanel: React.FC = () => {
           {item ? (
             <>
               <Icon className="w-6 h-6 text-white mb-1" />
-              <span className="text-xs text-white text-center leading-tight">{item.name}</span>
             </>
           ) : (
             <>
               <Icon className="w-6 h-6 text-gray-400 mb-1" />
-              <span className="text-xs text-gray-400 text-center leading-tight">{getSlotLabel(slotKey)}</span>
             </>
           )}
         </div>
-        {isSpecial && (
-          <span className="text-xs text-gray-400 mt-1">Artifact</span>
-        )}
+        <span className="text-xs text-gray-400 mt-1 text-center">
+          {item ? getSlotLabel(slotKey) : getSlotLabel(slotKey)}
+        </span>
       </div>
     );
   };
@@ -102,7 +100,15 @@ export const InventoryPanel: React.FC = () => {
     <div className="p-3 space-y-3">
       {/* Equipment Section */}
       <div className="bg-gray-800 rounded-lg p-4">
-        <h3 className="text-white font-bold mb-4 text-sm">Equipment</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-white font-bold text-sm">Equipment</h3>
+          <button
+            onClick={autoEquipAll}
+            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
+          >
+            Equipar Auto
+          </button>
+        </div>
         
         {/* Primera fila: Pet, Necklace, Helmet, Wings, (vacío) */}
         <div className="grid grid-cols-5 gap-3 mb-3">
