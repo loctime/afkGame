@@ -1,8 +1,9 @@
 import React from 'react';
 import { useGameStore } from '../../stores/gameStore';
+import { BackgroundSelector } from '../ui/BackgroundSelector';
 
 export const SettingsPanel: React.FC = () => {
-  const { player, saveGame, loadGame } = useGameStore();
+  const { player, saveGame, loadGame, gameState } = useGameStore();
   
   const resetProgress = () => {
     if (confirm('Are you sure you want to reset your progress? This cannot be undone.')) {
@@ -55,6 +56,19 @@ export const SettingsPanel: React.FC = () => {
   
   return (
     <div className="p-4 space-y-4">
+      {/* Background Selector */}
+      <BackgroundSelector 
+        currentBackground={gameState.currentBackground || 1}
+        onBackgroundChange={(backgroundNumber) => {
+          useGameStore.setState((state) => ({
+            gameState: {
+              ...state.gameState,
+              currentBackground: backgroundNumber
+            }
+          }));
+        }}
+      />
+      
       <div className="bg-gray-800 rounded-lg p-4">
         <h3 className="text-white font-bold mb-4">Game Settings</h3>
         

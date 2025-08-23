@@ -59,6 +59,13 @@ const AFKRPGGame: React.FC = () => {
       }
     }
   }, [activeTab, gameEngine]);
+
+  // Cambiar el fondo cuando se seleccione uno diferente
+  useEffect(() => {
+    if (gameEngine && gameState.currentBackground) {
+      gameEngine.changeBackground(gameState.currentBackground);
+    }
+  }, [gameState.currentBackground, gameEngine]);
   
   const startNewWave = () => {
     if (gameEngine) {

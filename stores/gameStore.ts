@@ -117,6 +117,7 @@ export const useGameStore = create<GameStore>()(
         isAfk: false,
         lastPlayTime: Date.now(),
         totalPlayTime: 0,
+        currentBackground: 1, // Fondo por defecto
       },
       
       // Render State (no serializable)

@@ -52,6 +52,7 @@ export interface GameState {
   isAfk: boolean;
   lastPlayTime: number;
   totalPlayTime: number;
+  currentBackground: number; // 1-4 para los diferentes fondos
 }
 
 export interface RenderState {
