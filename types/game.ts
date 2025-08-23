@@ -36,7 +36,7 @@ export interface Enemy {
 export interface Item {
   id: string;
   name: string;
-  type: 'weapon' | 'armor' | 'rune' | 'consumable';
+  type: 'weapon' | 'armor' | 'rune' | 'consumable' | 'helmet' | 'necklace' | 'wings' | 'bracelet' | 'chest' | 'shield' | 'gloves' | 'ring' | 'pants' | 'boots' | 'artifact' | 'pet';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   stats?: Partial<Stats>;
   damage?: number;
@@ -59,7 +59,27 @@ export interface RenderState {
 }
 
 export interface Equipment {
-  weapon?: Item;
-  armor?: Item;
-  runes: (Item | null)[];
+  // Primera fila
+  pet?: Item;           // demonio/hada
+  necklace?: Item;      // collar (joyeria)
+  helmet?: Item;        // casco
+  wings?: Item;         // alas / capa
+  
+  // Segunda fila
+  weapon?: Item;        // arma
+  bracelet1?: Item;     // pulsera
+  chest?: Item;         // armadura pecho
+  bracelet2?: Item;     // pulsera
+  shield?: Item;        // escudo / arma
+  
+  // Tercera fila
+  gloves?: Item;        // guantes
+  ring1?: Item;         // anillo
+  pants?: Item;         // pantalones
+  ring2?: Item;         // anillo
+  boots?: Item;         // botas
+  
+  // Cuarta fila
+  artifact1?: Item;     // artefacto runico
+  artifact2?: Item;     // artefacto runico
 }

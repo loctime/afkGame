@@ -175,9 +175,29 @@ export const useGameStore = create<GameStore>()(
       // Inventory
       inventory: [],
       equipment: {
+        // Primera fila
+        pet: undefined,
+        necklace: undefined,
+        helmet: undefined,
+        wings: undefined,
+        
+        // Segunda fila
         weapon: undefined,
-        armor: undefined,
-        runes: [null, null, null],
+        bracelet1: undefined,
+        chest: undefined,
+        bracelet2: undefined,
+        shield: undefined,
+        
+        // Tercera fila
+        gloves: undefined,
+        ring1: undefined,
+        pants: undefined,
+        ring2: undefined,
+        boots: undefined,
+        
+        // Cuarta fila
+        artifact1: undefined,
+        artifact2: undefined,
       },
       
       addItem: (item) => set((state) => ({
@@ -188,21 +208,98 @@ export const useGameStore = create<GameStore>()(
         const newInventory = state.inventory.filter(i => i.id !== item.id);
         const newEquipment = { ...state.equipment };
         
-        if (item.type === 'weapon') {
-          if (newEquipment.weapon) {
-            newInventory.push(newEquipment.weapon);
+        // Función helper para equipar un item en un slot específico
+        const equipToSlot = (slotKey: keyof Equipment) => {
+          if (newEquipment[slotKey]) {
+            newInventory.push(newEquipment[slotKey]!);
           }
-          newEquipment.weapon = item;
-        } else if (item.type === 'armor') {
-          if (newEquipment.armor) {
-            newInventory.push(newEquipment.armor);
-          }
-          newEquipment.armor = item;
-        } else if (item.type === 'rune') {
-          const emptySlot = newEquipment.runes.findIndex(r => r === null);
-          if (emptySlot !== -1) {
-            newEquipment.runes[emptySlot] = item;
-          }
+          newEquipment[slotKey] = item;
+        };
+        
+        // Mapear tipos de items a slots específicos
+        switch (item.type) {
+          case 'weapon':
+            equipToSlot('weapon');
+            break;
+          case 'chest':
+            equipToSlot('chest');
+            break;
+          case 'helmet':
+            equipToSlot('helmet');
+            break;
+          case 'necklace':
+            equipToSlot('necklace');
+            break;
+          case 'wings':
+            equipToSlot('wings');
+            break;
+          case 'bracelet':
+            // Equipar en el primer slot de pulsera disponible
+            if (!newEquipment.bracelet1) {
+              newEquipment.bracelet1 = item;
+            } else if (!newEquipment.bracelet2) {
+              newEquipment.bracelet2 = item;
+            } else {
+              // Si ambos están ocupados, reemplazar el primero
+              newInventory.push(newEquipment.bracelet1);
+              newEquipment.bracelet1 = item;
+            }
+            break;
+          case 'shield':
+            equipToSlot('shield');
+            break;
+          case 'gloves':
+            equipToSlot('gloves');
+            break;
+          case 'ring':
+            // Equipar en el primer slot de anillo disponible
+            if (!newEquipment.ring1) {
+              newEquipment.ring1 = item;
+            } else if (!newEquipment.ring2) {
+              newEquipment.ring2 = item;
+            } else {
+              // Si ambos están ocupados, reemplazar el primero
+              newInventory.push(newEquipment.ring1);
+              newEquipment.ring1 = item;
+            }
+            break;
+          case 'pants':
+            equipToSlot('pants');
+            break;
+          case 'boots':
+            equipToSlot('boots');
+            break;
+          case 'artifact':
+            // Equipar en el primer slot de artefacto disponible
+            if (!newEquipment.artifact1) {
+              newEquipment.artifact1 = item;
+            } else if (!newEquipment.artifact2) {
+              newEquipment.artifact2 = item;
+            } else {
+              // Si ambos están ocupados, reemplazar el primero
+              newInventory.push(newEquipment.artifact1);
+              newEquipment.artifact1 = item;
+            }
+            break;
+          case 'pet':
+            equipToSlot('pet');
+            break;
+          default:
+            // Para tipos legacy, mantener compatibilidad
+            if (item.type === 'armor') {
+              equipToSlot('chest');
+            } else if (item.type === 'rune') {
+              // Los runes ahora van a los slots de artefactos
+              if (!newEquipment.artifact1) {
+                newEquipment.artifact1 = item;
+              } else if (!newEquipment.artifact2) {
+                newEquipment.artifact2 = item;
+              } else {
+                newInventory.push(newEquipment.artifact1);
+                newEquipment.artifact1 = item;
+              }
+            }
+            break;
         }
         
         return {
@@ -230,7 +327,31 @@ export const useGameStore = create<GameStore>()(
               player: savedData.player,
               gameState: savedData.gameState,
               inventory: savedData.inventory || [],
-              equipment: savedData.equipment || { weapon: undefined, armor: undefined, runes: [null, null, null] },
+              equipment: savedData.equipment || {
+                // Primera fila
+                pet: undefined,
+                necklace: undefined,
+                helmet: undefined,
+                wings: undefined,
+                
+                // Segunda fila
+                weapon: undefined,
+                bracelet1: undefined,
+                chest: undefined,
+                bracelet2: undefined,
+                shield: undefined,
+                
+                // Tercera fila
+                gloves: undefined,
+                ring1: undefined,
+                pants: undefined,
+                ring2: undefined,
+                boots: undefined,
+                
+                // Cuarta fila
+                artifact1: undefined,
+                artifact2: undefined,
+              },
               renderState: {
                 enemies: [],
               },
