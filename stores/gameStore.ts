@@ -38,6 +38,16 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'afk-rpg-storage',
+      // Exclude renderState from persistence: enemies contain runtime-only data
+      // (HP mid-combat, spawn positions) that should reset each session.
+      // This also prevents any accidental PIXI object reference from reaching JSON.stringify.
+      partialize: (state) => ({
+        player: state.player,
+        gameState: state.gameState,
+        inventory: state.inventory,
+        equipment: state.equipment,
+        skills: state.skills,
+      }),
       storage: createJSONStorage(() => ({
         getItem: async (key) => {
           const value = await getFromDB(key);

@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import { Enemy } from '../../types/game';
 
 interface SkillEffect {
   id: string;
@@ -20,95 +19,76 @@ export class SkillEffectManager {
     this.gameContainer = gameContainer;
   }
 
-  public createBasicAttackEffect(playerX: number, playerY: number, enemy: Enemy) {
-    if (!enemy.sprite) return;
-    
-    // Crear un proyectil simple para el ataque básico
+  public createBasicAttackEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
     const projectile = new PIXI.Graphics();
-    projectile.beginFill(0xffff00); // Amarillo
+    projectile.beginFill(0xffff00);
     projectile.drawCircle(0, 0, 8);
     projectile.endFill();
-    
-    // Agregar resplandor
+
     const glow = new PIXI.Graphics();
     glow.beginFill(0xffff00, 0.5);
     glow.drawCircle(0, 0, 12);
     glow.endFill();
     glow.filters = [new PIXI.BlurFilter(2, 2)];
-    
+
     const container = new PIXI.Container();
     container.addChild(glow);
     container.addChild(projectile);
-    
     container.x = playerX;
     container.y = playerY;
-    
+
     this.gameContainer.addChild(container);
-    
-    const effect: SkillEffect = {
+
+    this.skillEffects.push({
       id: `basic_attack_${this.skillEffectId++}`,
       sprite: container as any,
-      targetX: enemy.sprite.x,
-      targetY: enemy.sprite.y,
+      targetX,
+      targetY,
       speed: 300,
       damage: 0,
-      type: 'basic_attack'
-    };
-    
-    this.skillEffects.push(effect);
+      type: 'basic_attack',
+    });
   }
 
-  public createFireballEffect(playerX: number, playerY: number, enemy: Enemy) {
-    if (!enemy.sprite) return;
-    
-    // Crear una bola de fuego
+  public createFireballEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
     const fireball = new PIXI.Graphics();
-    fireball.beginFill(0xff4400); // Naranja rojizo
+    fireball.beginFill(0xff4400);
     fireball.drawCircle(0, 0, 12);
     fireball.endFill();
-    
-    // Agregar resplandor de fuego
+
     const glow = new PIXI.Graphics();
     glow.beginFill(0xff8800, 0.6);
     glow.drawCircle(0, 0, 18);
     glow.endFill();
     glow.filters = [new PIXI.BlurFilter(3, 3)];
-    
-    // Agregar partículas de fuego
+
     const particles = new PIXI.Graphics();
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2;
       const radius = 15 + Math.random() * 5;
       particles.beginFill(0xffaa00, 0.8);
-      particles.drawCircle(
-        Math.cos(angle) * radius,
-        Math.sin(angle) * radius,
-        3
-      );
+      particles.drawCircle(Math.cos(angle) * radius, Math.sin(angle) * radius, 3);
       particles.endFill();
     }
-    
+
     const container = new PIXI.Container();
     container.addChild(glow);
     container.addChild(fireball);
     container.addChild(particles);
-    
     container.x = playerX;
     container.y = playerY;
-    
+
     this.gameContainer.addChild(container);
-    
-    const effect: SkillEffect = {
+
+    this.skillEffects.push({
       id: `fireball_${this.skillEffectId++}`,
       sprite: container as any,
-      targetX: enemy.sprite.x,
-      targetY: enemy.sprite.y,
+      targetX,
+      targetY,
       speed: 250,
       damage: 0,
-      type: 'fireball'
-    };
-    
-    this.skillEffects.push(effect);
+      type: 'fireball',
+    });
   }
 
   public createHealEffect(playerX: number, playerY: number) {
@@ -150,108 +130,80 @@ export class SkillEffectManager {
     animate();
   }
 
-  public createIceShardEffect(playerX: number, playerY: number, enemy: Enemy) {
-    if (!enemy.sprite) return;
-    
-    // Crear un fragmento de hielo
+  public createIceShardEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
     const iceShard = new PIXI.Graphics();
-    iceShard.beginFill(0x00ffff); // Cian
-    iceShard.drawPolygon([
-      -8, 0,  // Punta
-      8, -6,  // Esquina superior
-      4, 0,   // Base superior
-      8, 6,   // Esquina inferior
-      -8, 0   // Volver a la punta
-    ]);
+    iceShard.beginFill(0x00ffff);
+    iceShard.drawPolygon([-8, 0, 8, -6, 4, 0, 8, 6, -8, 0]);
     iceShard.endFill();
-    
-    // Agregar resplandor de hielo
+
     const glow = new PIXI.Graphics();
     glow.beginFill(0x88ffff, 0.5);
     glow.drawCircle(0, 0, 15);
     glow.endFill();
     glow.filters = [new PIXI.BlurFilter(2, 2)];
-    
-    // Agregar partículas de hielo
+
     const particles = new PIXI.Graphics();
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
       const radius = 12 + Math.random() * 4;
       particles.beginFill(0xffffff, 0.9);
-      particles.drawCircle(
-        Math.cos(angle) * radius,
-        Math.sin(angle) * radius,
-        2
-      );
+      particles.drawCircle(Math.cos(angle) * radius, Math.sin(angle) * radius, 2);
       particles.endFill();
     }
-    
+
     const container = new PIXI.Container();
     container.addChild(glow);
     container.addChild(iceShard);
     container.addChild(particles);
-    
     container.x = playerX;
     container.y = playerY;
-    
+
     this.gameContainer.addChild(container);
-    
-    const effect: SkillEffect = {
+
+    this.skillEffects.push({
       id: `ice_shard_${this.skillEffectId++}`,
       sprite: container as any,
-      targetX: enemy.sprite.x,
-      targetY: enemy.sprite.y,
+      targetX,
+      targetY,
       speed: 280,
       damage: 0,
-      type: 'ice_shard'
-    };
-    
-    this.skillEffects.push(effect);
+      type: 'ice_shard',
+    });
   }
 
-  public createLightningBoltEffect(playerX: number, playerY: number, enemy: Enemy) {
-    if (!enemy.sprite) return;
-    
-    // Crear un rayo
+  public createLightningBoltEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
     const lightning = new PIXI.Graphics();
-    lightning.lineStyle(4, 0xffff00, 1); // Amarillo brillante
+    lightning.lineStyle(4, 0xffff00, 1);
     lightning.moveTo(0, 0);
-    
-    // Crear un camino zigzagueante para el rayo
-    const points = [];
-    const distance = Math.sqrt(
-      Math.pow(enemy.sprite.x - playerX, 2) + 
-      Math.pow(enemy.sprite.y - playerY, 2)
-    );
+
+    const points: number[] = [];
+    const distance = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
     const segments = Math.floor(distance / 20);
-    
+
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
-      const x = t * (enemy.sprite.x - playerX);
-      const y = t * (enemy.sprite.y - playerY);
-      const offset = Math.sin(t * Math.PI * 4) * 10; // Zigzag
+      const x = t * (targetX - playerX);
+      const y = t * (targetY - playerY);
+      const offset = Math.sin(t * Math.PI * 4) * 10;
       points.push(x + offset, y);
     }
-    
+
     lightning.drawPolygon(points);
-    
-    // Agregar resplandor
+
     const glow = new PIXI.Graphics();
     glow.lineStyle(8, 0xffff00, 0.3);
     glow.drawPolygon(points);
-    
+
     const container = new PIXI.Container();
     container.addChild(glow);
     container.addChild(lightning);
-    
     container.x = playerX;
     container.y = playerY;
-    
+
     this.gameContainer.addChild(container);
-    
-    // El rayo es instantáneo, crear efecto de impacto inmediatamente
+
     setTimeout(() => {
-      this.createLightningHitEffect(enemy.sprite.x, enemy.sprite.y);
+      this.createLightningHitEffect(targetX, targetY);
       this.gameContainer.removeChild(container);
     }, 100);
   }

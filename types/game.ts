@@ -19,7 +19,8 @@ export interface Player {
   unallocatedPoints: number;
 }
 
-export interface Enemy {
+/** Serializable enemy data — safe to store in Zustand / IndexedDB. No PIXI references. */
+export interface EnemyData {
   id: string;
   name: string;
   level: number;
@@ -31,10 +32,12 @@ export interface Enemy {
   behavior: 'melee' | 'ranged' | 'tank' | 'aggressive';
   preferredDistance: number;
   speed: number;
-  sprite?: any; // PIXI.Sprite
   x: number;
   y: number;
 }
+
+/** @deprecated Use EnemyData for store state. Enemy kept for internal EnemyManager use only. */
+export type Enemy = EnemyData;
 
 export interface Item {
   id: string;
@@ -59,7 +62,7 @@ export interface GameState {
 }
 
 export interface RenderState {
-  enemies: Enemy[];
+  enemies: EnemyData[];
 }
 
 export interface Skill {

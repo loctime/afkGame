@@ -1,4 +1,4 @@
-import { Enemy } from '../types/game';
+import { EnemyData } from '../types/game';
 import { GameStore } from './types';
 
 export const createGameStateActions = (set: any) => ({
@@ -66,7 +66,7 @@ export const createGameStateActions = (set: any) => ({
     }
   })),
 
-  setEnemies: (enemies: Enemy[]) => set(() => ({
+  setEnemies: (enemies: EnemyData[]) => set(() => ({
     renderState: { enemies },
   })),
 
