@@ -24,13 +24,13 @@ const AFKRPGGame: React.FC = () => {
 
   useEffect(() => {
     if (canvasRef.current && !gameEngine) {
-      const engine = new GameEngine(canvasRef.current, gameStore);
+      const engine = new GameEngine(canvasRef.current, useGameStore.getState);
       setGameEngine(engine);
 
       // Auto-arrancar: si hay boss pendiente, el overlay lo gestiona;
       // de lo contrario iniciar la wave actual automáticamente
       setTimeout(() => {
-        const state = gameStore.gameState;
+        const state = useGameStore.getState().gameState;
         if (!(state.isInBossWave && !state.isFighting)) {
           engine.startWave(state.currentWave);
         }
@@ -86,7 +86,7 @@ const AFKRPGGame: React.FC = () => {
   // Handler para confirmar el boss
   const handleBossConfirm = () => {
     if (gameEngine) {
-      gameEngine.startWave(gameStore.gameState.currentWave);
+      gameEngine.startWave(useGameStore.getState().gameState.currentWave);
     }
   };
 
