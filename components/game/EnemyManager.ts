@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Enemy } from '../../types/game';
+import { EnemyData } from '../../types/game';
 
 export class EnemyManager {
   private enemies: Map<string, PIXI.AnimatedSprite> = new Map();
@@ -13,7 +13,7 @@ export class EnemyManager {
     this.loadEnemyAnimations();
   }
 
-  public createEnemy(enemy: Enemy): PIXI.AnimatedSprite {
+  public createEnemy(enemy: EnemyData): PIXI.AnimatedSprite {
     // Seleccionar un monstruo aleatorio basado en el nivel
     const monsterIndex = this.getMonsterIndexForWave(enemy.level);
     
@@ -162,28 +162,23 @@ export class EnemyManager {
     animate();
   }
 
-  private addPatrolMovement(enemy: Enemy) {
-    if (!enemy.sprite) return;
-    
+  private addPatrolMovement(sprite: PIXI.AnimatedSprite, speed: number) {
     // Generar dirección aleatoria para patrulla
     const angle = Math.random() * Math.PI * 2;
     const patrolDistance = 20 + Math.random() * 30;
-    
-    const targetX = enemy.sprite.x + Math.cos(angle) * patrolDistance;
-    const targetY = enemy.sprite.y + Math.sin(angle) * patrolDistance;
-    
-    // Mover hacia el objetivo de patrulla
-    const dx = targetX - enemy.sprite.x;
-    const dy = targetY - enemy.sprite.y;
+
+    const targetX = sprite.x + Math.cos(angle) * patrolDistance;
+    const targetY = sprite.y + Math.sin(angle) * patrolDistance;
+
+    const dx = targetX - sprite.x;
+    const dy = targetY - sprite.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     if (distance > 5) {
-      const speed = enemy.speed * 0.3; // Más lento que persecución
-      enemy.sprite.x += (dx / distance) * speed * 0.016; // 60 FPS
-      enemy.sprite.y += (dy / distance) * speed * 0.016;
-      
-      // Aumentar velocidad de animación durante patrulla
-      enemy.sprite.animationSpeed = 0.25;
+      const patrolSpeed = speed * 0.3;
+      sprite.x += (dx / distance) * patrolSpeed * 0.016;
+      sprite.y += (dy / distance) * patrolSpeed * 0.016;
+      sprite.animationSpeed = 0.25;
     }
   }
 
@@ -267,22 +262,22 @@ export class EnemyManager {
     }
   }
 
-  public spawnEnemiesForWave(wave: number): Enemy[] {
+  public spawnEnemiesForWave(wave: number): EnemyData[] {
     const enemyCount = Math.min(wave, 9);
-    const newEnemies: Enemy[] = [];
-    
+    const newEnemies: EnemyData[] = [];
+
     for (let i = 0; i < enemyCount; i++) {
       const angle = (i / enemyCount) * Math.PI * 2;
       const distance = 150 + Math.random() * 100;
       const x = this.app.screen.width / 2 + Math.cos(angle) * distance;
       const y = this.app.screen.height / 2 + Math.sin(angle) * distance;
-      
-      // Asignar comportamiento aleatorio
+
       const behavior = this.getEnemyBehavior(wave);
       const speed = this.getEnemySpeed(behavior, wave);
       const preferredDistance = this.getPreferredDistance(behavior);
-      
-      const enemy: Enemy = {
+
+      // Pure data — no PIXI references
+      const enemyData: EnemyData = {
         id: `enemy_${wave}_${i}`,
         name: this.getEnemyName(wave),
         level: wave,
@@ -297,72 +292,66 @@ export class EnemyManager {
         x,
         y,
       };
-      
-      enemy.sprite = this.createEnemy(enemy);
-      this.enemies.set(enemy.id, enemy.sprite);
-      newEnemies.push(enemy);
+
+      // Sprite lives only in the internal Map, never in the store
+      const sprite = this.createEnemy(enemyData);
+      this.enemies.set(enemyData.id, sprite);
+      newEnemies.push(enemyData);
     }
-    
+
     return newEnemies;
   }
 
-  public updateEnemyPositions(enemies: Enemy[], playerX: number, playerY: number, deltaTime: number) {
+  public updateEnemyPositions(enemies: EnemyData[], playerX: number, playerY: number, deltaTime: number) {
     enemies.forEach((enemy) => {
-      if (enemy.sprite) {
-        const dx = playerX - enemy.sprite.x;
-        const dy = playerY - enemy.sprite.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Comportamiento específico según el tipo de enemigo
-        switch (enemy.behavior) {
-          case 'melee':
-            // Enemigos cuerpo a cuerpo: se acercan mucho al jugador
-            if (distance > enemy.preferredDistance) {
-              enemy.sprite.x += (dx / distance) * enemy.speed * deltaTime;
-              enemy.sprite.y += (dy / distance) * enemy.speed * deltaTime;
-            }
-            break;
-            
-          case 'ranged':
-            // Enemigos a distancia: mantienen distancia y se alejan si están muy cerca
-            if (distance < enemy.preferredDistance - 20) {
-              // Alejarse del jugador
-              enemy.sprite.x -= (dx / distance) * enemy.speed * deltaTime;
-              enemy.sprite.y -= (dy / distance) * enemy.speed * deltaTime;
-            } else if (distance > enemy.preferredDistance + 20) {
-              // Acercarse al jugador
-              enemy.sprite.x += (dx / distance) * enemy.speed * deltaTime;
-              enemy.sprite.y += (dy / distance) * enemy.speed * deltaTime;
-            }
-            break;
-            
-          case 'tank':
-            // Enemigos tanque: se mueven lento pero son persistentes
-            if (distance > enemy.preferredDistance) {
-              enemy.sprite.x += (dx / distance) * enemy.speed * deltaTime;
-              enemy.sprite.y += (dy / distance) * enemy.speed * deltaTime;
-            }
-            break;
-            
-          case 'aggressive':
-            // Enemigos agresivos: se mueven rápido y persiguen activamente
-            if (distance > enemy.preferredDistance) {
-              enemy.sprite.x += (dx / distance) * enemy.speed * deltaTime;
-              enemy.sprite.y += (dy / distance) * enemy.speed * deltaTime;
-            }
-            break;
-        }
-        
-        // Ajustar velocidad de animación según el movimiento
-        const isMoving = distance > enemy.preferredDistance;
-        enemy.sprite.animationSpeed = isMoving ? 0.3 : 0.2;
-        
-        // Agregar movimiento de patrulla cuando no están persiguiendo
-        if (!isMoving && Math.random() < 0.01) { // 1% de probabilidad por frame
-          this.addPatrolMovement(enemy);
-        }
+      // Look up the sprite from the internal Map — it never lives in the store
+      const sprite = this.enemies.get(enemy.id);
+      if (!sprite) return;
+
+      const dx = playerX - sprite.x;
+      const dy = playerY - sprite.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      switch (enemy.behavior) {
+        case 'melee':
+          if (distance > enemy.preferredDistance) {
+            sprite.x += (dx / distance) * enemy.speed * deltaTime;
+            sprite.y += (dy / distance) * enemy.speed * deltaTime;
+          }
+          break;
+
+        case 'ranged':
+          if (distance < enemy.preferredDistance - 20) {
+            sprite.x -= (dx / distance) * enemy.speed * deltaTime;
+            sprite.y -= (dy / distance) * enemy.speed * deltaTime;
+          } else if (distance > enemy.preferredDistance + 20) {
+            sprite.x += (dx / distance) * enemy.speed * deltaTime;
+            sprite.y += (dy / distance) * enemy.speed * deltaTime;
+          }
+          break;
+
+        case 'tank':
+        case 'aggressive':
+          if (distance > enemy.preferredDistance) {
+            sprite.x += (dx / distance) * enemy.speed * deltaTime;
+            sprite.y += (dy / distance) * enemy.speed * deltaTime;
+          }
+          break;
+      }
+
+      const isMoving = distance > enemy.preferredDistance;
+      sprite.animationSpeed = isMoving ? 0.3 : 0.2;
+
+      if (!isMoving && Math.random() < 0.01) {
+        this.addPatrolMovement(sprite, enemy.speed);
       }
     });
+  }
+
+  /** Returns the current screen position of an enemy sprite, or null if not found. */
+  public getSpritePosition(enemyId: string): { x: number; y: number } | null {
+    const sprite = this.enemies.get(enemyId);
+    return sprite ? { x: sprite.x, y: sprite.y } : null;
   }
 
   public removeEnemy(enemyId: string) {

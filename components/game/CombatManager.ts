@@ -1,7 +1,8 @@
-import { Enemy } from '../../types/game';
+import { EnemyData } from '../../types/game';
 import { GameStore } from '../../stores/types';
 import { SkillEffectManager } from './SkillEffectManager';
 import { PlayerManager } from './PlayerManager';
+import { EnemyManager } from './EnemyManager';
 
 // Seconds between each combat round (player attacks + enemy counter-attacks)
 const ATTACK_INTERVAL = 1.5;
@@ -10,13 +11,20 @@ export class CombatManager {
   private store: GameStore;
   private skillEffectManager: SkillEffectManager;
   private playerManager: PlayerManager;
+  private enemyManager: EnemyManager;
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
 
-  constructor(store: GameStore, skillEffectManager: SkillEffectManager, playerManager: PlayerManager) {
+  constructor(
+    store: GameStore,
+    skillEffectManager: SkillEffectManager,
+    playerManager: PlayerManager,
+    enemyManager: EnemyManager,
+  ) {
     this.store = store;
     this.skillEffectManager = skillEffectManager;
     this.playerManager = playerManager;
+    this.enemyManager = enemyManager;
   }
 
   public updateCombat(deltaTime: number) {
@@ -48,12 +56,10 @@ export class CombatManager {
         this.store.gainXp(enemy.xpReward);
         this.store.gainGold(enemy.goldReward);
 
-        // Remove sprite from PIXI container
-        if (enemy.sprite) {
-          enemy.sprite.parent?.removeChild(enemy.sprite);
-        }
+        // Remove sprite via EnemyManager (it owns all PIXI objects)
+        this.enemyManager.removeEnemy(enemy.id);
 
-        // Remove from store (triggers re-render)
+        // Remove data from store (triggers re-render)
         this.store.removeEnemy(enemy.id);
 
         // Check if wave completed (read fresh state after removal)
@@ -76,75 +82,70 @@ export class CombatManager {
     }
   }
 
-  private tryUseSkill(enemy: Enemy): boolean {
+  private tryUseSkill(enemy: EnemyData): boolean {
     const skills = this.store.skills;
     const player = this.store.player;
     const playerSprite = this.playerManager.getPlayer();
-    
+
     if (!playerSprite) return false;
-    
+
+    // Get the enemy's current screen position from EnemyManager (owns all sprites)
+    const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+
     // Priorizar skills de curación si la salud está baja
     if (player.hp < player.maxHp * 0.3) {
       const healSkill = skills.find(s => s.type === 'heal' && s.currentCooldown === 0);
       if (healSkill && player.mp >= healSkill.manaCost) {
         this.store.useSkill(healSkill.id);
-        
-        // Crear efecto visual de curación
         this.skillEffectManager.createHealEffect(playerSprite.x, playerSprite.y);
-        
         this.playerManager.changeAnimation('run');
-        setTimeout(() => {
-          this.playerManager.changeAnimation('idle');
-        }, 300);
+        setTimeout(() => this.playerManager.changeAnimation('idle'), 300);
         return true;
       }
     }
-    
+
     // Usar skills de ataque si hay mana disponible
     const attackSkill = skills.find(s => s.type === 'attack' && s.currentCooldown === 0 && s.id !== 'basic_attack');
     if (attackSkill && player.mp >= attackSkill.manaCost) {
       this.store.useSkill(attackSkill.id);
-      const skillDamage = attackSkill.damage || 0;
-      enemy.hp -= skillDamage;
-      
-      // Crear efecto visual según el tipo de skill
-      if (attackSkill.id === 'fire_ball') {
-        this.skillEffectManager.createFireballEffect(playerSprite.x, playerSprite.y, enemy);
-      } else if (attackSkill.id === 'ice_shard') {
-        this.skillEffectManager.createIceShardEffect(playerSprite.x, playerSprite.y, enemy);
-      } else if (attackSkill.id === 'lightning_bolt') {
-        this.skillEffectManager.createLightningBoltEffect(playerSprite.x, playerSprite.y, enemy);
-      } else {
-        // Para otros skills de ataque, usar efecto básico
-        this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemy);
+      enemy.hp -= attackSkill.damage || 0;
+
+      // Visual effects use screen position from EnemyManager; skip if sprite not found
+      if (enemyPos) {
+        if (attackSkill.id === 'fire_ball') {
+          this.skillEffectManager.createFireballEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+        } else if (attackSkill.id === 'ice_shard') {
+          this.skillEffectManager.createIceShardEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+        } else if (attackSkill.id === 'lightning_bolt') {
+          this.skillEffectManager.createLightningBoltEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+        } else {
+          this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+        }
       }
-      
+
       this.playerManager.changeAnimation('run');
-      setTimeout(() => {
-        this.playerManager.changeAnimation('idle');
-      }, 300);
+      setTimeout(() => this.playerManager.changeAnimation('idle'), 300);
       return true;
     }
-    
+
     return false;
   }
 
-  private useBasicAttack(enemy: Enemy) {
+  private useBasicAttack(enemy: EnemyData) {
     const basicAttack = this.store.skills.find(s => s.id === 'basic_attack');
     const playerSprite = this.playerManager.getPlayer();
-    
+
     if (basicAttack && playerSprite) {
       this.store.useSkill(basicAttack.id);
-      const playerDamage = (basicAttack.damage || 0) + (this.store.player.stats.str * 2);
-      enemy.hp -= playerDamage;
-      
-      // Crear efecto visual de ataque básico
-      this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemy);
-      
+      enemy.hp -= (basicAttack.damage || 0) + (this.store.player.stats.str * 2);
+
+      const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+      if (enemyPos) {
+        this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+      }
+
       this.playerManager.changeAnimation('run');
-      setTimeout(() => {
-        this.playerManager.changeAnimation('idle');
-      }, 200);
+      setTimeout(() => this.playerManager.changeAnimation('idle'), 200);
     }
   }
 

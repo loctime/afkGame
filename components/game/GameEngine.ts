@@ -40,7 +40,7 @@ export class GameEngine {
     this.playerManager = new PlayerManager(this.app, this.gameContainer);
     this.enemyManager = new EnemyManager(this.app, this.gameContainer);
     this.skillEffectManager = new SkillEffectManager(this.gameContainer);
-    this.combatManager = new CombatManager(this.store, this.skillEffectManager, this.playerManager);
+    this.combatManager = new CombatManager(this.store, this.skillEffectManager, this.playerManager, this.enemyManager);
     
     this.startGameLoop();
     this.handleResize();

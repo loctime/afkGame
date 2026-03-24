@@ -1,4 +1,4 @@
-import { Player, Stats, GameState, RenderState, Item, Equipment, Skill, Enemy } from '../types/game';
+import { Player, Stats, GameState, RenderState, Item, Equipment, Skill, EnemyData } from '../types/game';
 
 export interface GameStore {
   // Player
@@ -20,7 +20,7 @@ export interface GameStore {
   toggleAfk: () => void;
   setAfkActive: (value: boolean) => void;
   setIsFighting: (value: boolean) => void;
-  setEnemies: (enemies: Enemy[]) => void;
+  setEnemies: (enemies: EnemyData[]) => void;
   removeEnemy: (enemyId: string) => void;
   
   // Inventory
