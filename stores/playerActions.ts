@@ -55,4 +55,11 @@ export const createPlayerActions = (set: any, get: () => GameStore) => ({
       hp: Math.min(state.player.maxHp, state.player.hp + amount)
     }
   })),
+
+  gainGold: (amount: number) => set((state: GameStore) => ({
+    player: {
+      ...state.player,
+      gold: state.player.gold + amount
+    }
+  })),
 });

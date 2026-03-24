@@ -1,3 +1,4 @@
+import { Enemy } from '../types/game';
 import { GameStore } from './types';
 
 export const createGameStateActions = (set: any) => ({
@@ -49,5 +50,30 @@ export const createGameStateActions = (set: any) => ({
       isAfk: !state.gameState.isAfk,
       lastPlayTime: Date.now(),
     }
+  })),
+
+  setAfkActive: (value: boolean) => set((state: GameStore) => ({
+    gameState: {
+      ...state.gameState,
+      isAfk: value,
+    }
+  })),
+
+  setIsFighting: (value: boolean) => set((state: GameStore) => ({
+    gameState: {
+      ...state.gameState,
+      isFighting: value,
+    }
+  })),
+
+  setEnemies: (enemies: Enemy[]) => set(() => ({
+    renderState: { enemies },
+  })),
+
+  removeEnemy: (enemyId: string) => set((state: GameStore) => ({
+    renderState: {
+      ...state.renderState,
+      enemies: state.renderState.enemies.filter((e) => e.id !== enemyId),
+    },
   })),
 });

@@ -3,10 +3,15 @@ import { GameStore } from '../../stores/types';
 import { SkillEffectManager } from './SkillEffectManager';
 import { PlayerManager } from './PlayerManager';
 
+// Seconds between each combat round (player attacks + enemy counter-attacks)
+const ATTACK_INTERVAL = 1.5;
+
 export class CombatManager {
   private store: GameStore;
   private skillEffectManager: SkillEffectManager;
   private playerManager: PlayerManager;
+  // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
+  private attackAccumulator = 0;
 
   constructor(store: GameStore, skillEffectManager: SkillEffectManager, playerManager: PlayerManager) {
     this.store = store;
@@ -15,14 +20,19 @@ export class CombatManager {
   }
 
   public updateCombat(deltaTime: number) {
-    const gameState = this.store.gameState;
     const player = this.store.player;
-    
+
     // Actualizar cooldowns de skills
     this.store.updateSkillCooldowns(deltaTime);
-    
-    // Simple combat simulation
-    if (this.store.renderState.enemies.length > 0 && Math.random() < deltaTime) {
+
+    if (this.store.renderState.enemies.length === 0) return;
+
+    // Accumulate time; only trigger a combat round once per ATTACK_INTERVAL seconds
+    this.attackAccumulator += deltaTime;
+    if (this.attackAccumulator < ATTACK_INTERVAL) return;
+    this.attackAccumulator -= ATTACK_INTERVAL;
+
+    {
       const enemy = this.store.renderState.enemies[0];
       
       // Intentar usar skills automáticamente
@@ -34,36 +44,31 @@ export class CombatManager {
       }
       
       if (enemy.hp <= 0) {
-        // Enemy defeated
+        // Enemy defeated — use store actions so Zustand triggers re-renders
         this.store.gainXp(enemy.xpReward);
-        this.store.player.gold += enemy.goldReward;
-        
-        // Remove enemy from visual game and array
+        this.store.gainGold(enemy.goldReward);
+
+        // Remove sprite from PIXI container
         if (enemy.sprite) {
-          // Remove from PIXI container
           enemy.sprite.parent?.removeChild(enemy.sprite);
         }
-        
-        // Remove from array
-        const enemyIndex = this.store.renderState.enemies.indexOf(enemy);
-        if (enemyIndex > -1) {
-          this.store.renderState.enemies.splice(enemyIndex, 1);
-        }
-        
-        // Check if wave completed
+
+        // Remove from store (triggers re-render)
+        this.store.removeEnemy(enemy.id);
+
+        // Check if wave completed (read fresh state after removal)
         if (this.store.renderState.enemies.length === 0) {
           this.completeWave();
         }
       } else {
-        // Enemy attacks player - Mostrar animación de hit
+        // Enemy attacks player — show hit animation
         this.store.takeDamage(enemy.damage);
         this.playerManager.changeAnimation('hit');
-        
-        // Volver a idle después de un tiempo
+
         setTimeout(() => {
           this.playerManager.changeAnimation('idle');
         }, 500);
-        
+
         if (player.hp <= 0) {
           this.gameOver();
         }
@@ -160,12 +165,13 @@ export class CombatManager {
   }
 
   private gameOver() {
-    this.store.gameState.isAfk = false;
-    this.store.gameState.isFighting = false;
-    
+    // Use store actions — never mutate state directly
+    this.store.setAfkActive(false);
+    this.store.setIsFighting(false);
+
     // Mostrar animación de muerte
     this.playerManager.changeAnimation('dead');
-    
+
     // Reset to safe state, heal player after a delay
     setTimeout(() => {
       this.store.heal(this.store.player.maxHp);
