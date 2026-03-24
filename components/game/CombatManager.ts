@@ -12,6 +12,7 @@ export class CombatManager {
   private skillEffectManager: SkillEffectManager;
   private playerManager: PlayerManager;
   private enemyManager: EnemyManager;
+  private onStartWave: (wave: number) => void;
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
 
@@ -20,11 +21,13 @@ export class CombatManager {
     skillEffectManager: SkillEffectManager,
     playerManager: PlayerManager,
     enemyManager: EnemyManager,
+    onStartWave: (wave: number) => void,
   ) {
     this.store = store;
     this.skillEffectManager = skillEffectManager;
     this.playerManager = playerManager;
     this.enemyManager = enemyManager;
+    this.onStartWave = onStartWave;
   }
 
   public updateCombat(deltaTime: number) {
@@ -42,15 +45,15 @@ export class CombatManager {
 
     {
       const enemy = this.store.renderState.enemies[0];
-      
+
       // Intentar usar skills automáticamente
       const skillUsed = this.tryUseSkill(enemy);
-      
+
       if (!skillUsed) {
         // Usar ataque básico si no se usó ningún skill
         this.useBasicAttack(enemy);
       }
-      
+
       if (enemy.hp <= 0) {
         // Enemy defeated — use store actions so Zustand triggers re-renders
         this.store.gainXp(enemy.xpReward);
@@ -75,7 +78,8 @@ export class CombatManager {
           this.playerManager.changeAnimation('idle');
         }, 500);
 
-        if (player.hp <= 0) {
+        // Read fresh HP after damage
+        if (this.store.player.hp <= 0) {
           this.gameOver();
         }
       }
@@ -151,32 +155,43 @@ export class CombatManager {
 
   private completeWave() {
     const currentWave = this.store.gameState.currentWave;
-    
-    if (currentWave % 10 === 9) {
-      // Completed wave 9, 19, 29, etc. - show boss button
-      this.store.setWave(currentWave + 1);
-    } else if (currentWave % 10 === 0) {
-      // This was a boss fight - handled by UI
-      return;
+    const nextWave = currentWave + 1;
+
+    if (currentWave % 10 === 0) {
+      // Boss derrotado — avanzar a la siguiente fase
+      this.store.winBossFight();
+      const afterBossWave = this.store.gameState.currentWave;
+      setTimeout(() => this.onStartWave(afterBossWave), 1000);
+    } else if (nextWave % 10 === 0) {
+      // Siguiente wave es boss — pausar y esperar confirmación del jugador
+      this.store.setWave(nextWave);       // isInBossWave = true
+      this.store.setIsFighting(false);    // pausa; UI detecta isInBossWave && !isFighting
     } else {
-      // Regular wave - auto advance
-      const newWave = currentWave + 1;
-      this.store.setWave(newWave);
+      // Wave regular — auto-avanzar
+      this.store.setWave(nextWave);
+      setTimeout(() => this.onStartWave(nextWave), 500);
     }
   }
 
   private gameOver() {
-    // Use store actions — never mutate state directly
-    this.store.setAfkActive(false);
+    // Pausar combate
     this.store.setIsFighting(false);
 
     // Mostrar animación de muerte
     this.playerManager.changeAnimation('dead');
 
-    // Reset to safe state, heal player after a delay
+    // Revivir en la wave 1 de la fase actual después de 2 segundos
     setTimeout(() => {
+      const currentWave = this.store.gameState.currentWave;
+      const phaseIndex = Math.floor((currentWave - 1) / 10);
+      const reviveWave = phaseIndex * 10 + 1;
+
       this.store.heal(this.store.player.maxHp);
+      this.store.setWave(reviveWave);
       this.playerManager.changeAnimation('idle');
+
+      // Reiniciar combate en la wave de inicio de fase
+      setTimeout(() => this.onStartWave(reviveWave), 500);
     }, 2000);
   }
 }
