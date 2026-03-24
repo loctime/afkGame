@@ -18,7 +18,6 @@ export const SettingsPanel: React.FC = () => {
           maxHp: 100,
           mp: 50,
           maxMp: 50,
-          // Keep allocated stats but reset unallocated points
           unallocatedPoints: 0,
         },
         gameState: {
@@ -27,8 +26,13 @@ export const SettingsPanel: React.FC = () => {
           currentPhase: 1,
           isInBossWave: false,
           isFighting: false,
+          isAfk: false,
+        },
+        // enemies live in renderState, not gameState
+        renderState: {
+          ...state.renderState,
           enemies: [],
-        }
+        },
       }));
     }
   };

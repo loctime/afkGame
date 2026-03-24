@@ -95,11 +95,11 @@ export class GameEngine {
   public startWave(wave: number) {
     // Clear existing enemies
     this.enemyManager.clearAllEnemies();
-    
-    // Spawn new enemies
+
+    // Spawn new enemies and push them through the store so Zustand triggers re-renders
     const enemies = this.enemyManager.spawnEnemiesForWave(wave);
-    this.store.renderState.enemies = enemies;
-    this.store.gameState.isFighting = true;
+    this.store.setEnemies(enemies);
+    this.store.setIsFighting(true);
   }
   
   private handleResize() {

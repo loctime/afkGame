@@ -1,4 +1,4 @@
-import { Player, Stats, GameState, RenderState, Item, Equipment, Skill } from '../types/game';
+import { Player, Stats, GameState, RenderState, Item, Equipment, Skill, Enemy } from '../types/game';
 
 export interface GameStore {
   // Player
@@ -6,9 +6,10 @@ export interface GameStore {
   updatePlayerStats: (stats: Partial<Stats>) => void;
   levelUp: () => void;
   gainXp: (amount: number) => void;
+  gainGold: (amount: number) => void;
   takeDamage: (amount: number) => void;
   heal: (amount: number) => void;
-  
+
   // Game State
   gameState: GameState;
   renderState: RenderState;
@@ -17,6 +18,10 @@ export interface GameStore {
   winBossFight: () => void;
   loseBossFight: () => void;
   toggleAfk: () => void;
+  setAfkActive: (value: boolean) => void;
+  setIsFighting: (value: boolean) => void;
+  setEnemies: (enemies: Enemy[]) => void;
+  removeEnemy: (enemyId: string) => void;
   
   // Inventory
   inventory: Item[];
