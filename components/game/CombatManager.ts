@@ -31,25 +31,36 @@ export class CombatManager {
   }
 
   public updateCombat(deltaTime: number) {
+    // DEBUG — quitar después
+    const _gs = this.getStore();
+    console.log('[CM] updateCombat called | isFighting:', _gs.gameState.isFighting, '| enemies:', _gs.renderState.enemies.length, '| deltaTime:', deltaTime.toFixed(4));
+
     const player = this.getStore().player;
 
     // Actualizar cooldowns de skills
     this.getStore().updateSkillCooldowns(deltaTime);
 
-    if (this.getStore().renderState.enemies.length === 0) return;
+    if (this.getStore().renderState.enemies.length === 0) {
+      console.log('[CM] BLOCKED: no enemies in store');
+      return;
+    }
 
     // Accumulate time; only trigger a combat round once per ATTACK_INTERVAL seconds
     this.attackAccumulator += deltaTime;
+    console.log('[CM] attackAccumulator:', this.attackAccumulator.toFixed(4), '/ needed:', ATTACK_INTERVAL);
     if (this.attackAccumulator < ATTACK_INTERVAL) return;
     this.attackAccumulator -= ATTACK_INTERVAL;
 
     {
       const enemy = this.getStore().renderState.enemies[0];
+      console.log('[CM] ATTACK ROUND | enemy hp:', enemy.hp, '| player hp:', player.hp);
 
       // Intentar usar skills automáticamente
       const skillUsed = this.tryUseSkill(enemy);
+      console.log('[CM] tryUseSkill result:', skillUsed);
 
       if (!skillUsed) {
+        console.log('[CM] falling back to useBasicAttack');
         // Usar ataque básico si no se usó ningún skill
         this.useBasicAttack(enemy);
       }

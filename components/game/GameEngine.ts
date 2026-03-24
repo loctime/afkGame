@@ -11,6 +11,9 @@ export class GameEngine {
   private gameContainer: PIXI.Container;
   private gameLoop: number = 0;
   private getStore: () => GameStore;
+  // DEBUG helpers — quitar después
+  private _debugLogged = false;
+  private _debugLastLog = 0;
 
   // Managers modulares
   private playerManager: PlayerManager;
@@ -74,6 +77,13 @@ export class GameEngine {
   private update(deltaTime: number) {
     const gameState = this.getStore().gameState;
     const player = this.playerManager.getPlayer();
+
+    // DEBUG — quitar después
+    if (!this._debugLogged || Date.now() - this._debugLastLog > 2000) {
+      console.log('[GE] update | isAfk:', gameState.isAfk, '| isFighting:', gameState.isFighting, '| enemies:', this.getStore().renderState.enemies.length);
+      this._debugLastLog = Date.now();
+      this._debugLogged = true;
+    }
 
     if (gameState.isAfk && gameState.isFighting) {
       this.combatManager.updateCombat(deltaTime);
