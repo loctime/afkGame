@@ -1,6 +1,7 @@
 // Utilidades para el sistema del juego
 
 import { GAME_CONFIG, ITEM_RARITIES } from '../balance/game-config';
+import { Player, Stats, Equipment } from '../../types/game';
 
 /**
  * Genera un número aleatorio entre min y max
@@ -24,11 +25,30 @@ export function rollChance(probability: number): boolean {
 }
 
 /**
- * Calcula el daño del jugador basado en sus stats y equipamiento
+ * Suma los stats base del jugador con los stats de todo el equipo equipado.
+ * Función pura — no modifica nada.
  */
-export function calculatePlayerDamage(player: any, equipment: any): number {
+export function getTotalStats(player: Player, equipment: Equipment): Stats {
+  const total: Stats = { ...player.stats };
+  const slotKeys = Object.keys(equipment) as (keyof Equipment)[];
+  for (const slotKey of slotKeys) {
+    const item = equipment[slotKey];
+    if (!item?.stats) continue;
+    const statKeys = Object.keys(item.stats) as (keyof Stats)[];
+    for (const key of statKeys) {
+      total[key] = (total[key] ?? 0) + (item.stats[key] ?? 0);
+    }
+  }
+  return total;
+}
+
+/**
+ * Calcula el daño del jugador basado en sus stats totales (base + equipo) y arma equipada
+ */
+export function calculatePlayerDamage(player: Player, equipment: Equipment): number {
   const baseDamage = 10;
-  const strDamage = player.stats.str * GAME_CONFIG.STATS.STR_DAMAGE_MULTIPLIER;
+  const totalStats = getTotalStats(player, equipment);
+  const strDamage = totalStats.str * GAME_CONFIG.STATS.STR_DAMAGE_MULTIPLIER;
   const weaponDamage = equipment.weapon?.damage || 0;
   
   let totalDamage = baseDamage + strDamage + weaponDamage;
@@ -42,11 +62,12 @@ export function calculatePlayerDamage(player: any, equipment: any): number {
 }
 
 /**
- * Calcula la velocidad de ataque del jugador
+ * Calcula la velocidad de ataque del jugador usando stats totales (base + equipo)
  */
-export function calculateAttackSpeed(player: any, equipment: any): number {
+export function calculateAttackSpeed(player: Player, equipment: Equipment): number {
   const baseSpeed = GAME_CONFIG.COMBAT.BASE_ATTACK_SPEED;
-  const dexSpeed = player.stats.dex * GAME_CONFIG.STATS.DEX_ATTACK_SPEED_MULTIPLIER;
+  const totalStats = getTotalStats(player, equipment);
+  const dexSpeed = totalStats.dex * GAME_CONFIG.STATS.DEX_ATTACK_SPEED_MULTIPLIER;
   
   return baseSpeed + dexSpeed;
 }
