@@ -3,6 +3,7 @@ import { GameStore } from '../../stores/types';
 import { SkillEffectManager } from './SkillEffectManager';
 import { PlayerManager } from './PlayerManager';
 import { EnemyManager } from './EnemyManager';
+import { computeEquipmentBonuses } from '../../stores/equipmentUtils';
 
 // Seconds between each combat round (player attacks + enemy counter-attacks)
 const ATTACK_INTERVAL = 1.5;
@@ -81,8 +82,10 @@ export class CombatManager {
           this.completeWave();
         }
       } else {
-        // Enemy attacks player — show hit animation
-        this.getStore().takeDamage(enemy.damage);
+        // Enemy attacks player — mitigate by equipment defense
+        const equipBonus = computeEquipmentBonuses(this.getStore().equipment);
+        const mitigatedDamage = Math.max(1, enemy.damage - equipBonus.defense);
+        this.getStore().takeDamage(mitigatedDamage);
         this.playerManager.changeAnimation('hit');
 
         setTimeout(() => {
@@ -123,7 +126,11 @@ export class CombatManager {
     const attackSkill = skills.find(s => s.type === 'attack' && s.currentCooldown === 0 && s.id !== 'basic_attack');
     if (attackSkill && player.mp >= attackSkill.manaCost) {
       this.getStore().useSkill(attackSkill.id);
-      enemy.hp -= attackSkill.damage || 0;
+      const equipBonus = computeEquipmentBonuses(this.getStore().equipment);
+      const totalStr = player.stats.str + equipBonus.stats.str;
+      const totalInt = player.stats.int + equipBonus.stats.int;
+      const skillDamage = (attackSkill.damage || 0) + totalStr + totalInt + equipBonus.damage;
+      enemy.hp -= skillDamage;
 
       // Visual effects use screen position from EnemyManager; skip if sprite not found
       if (enemyPos) {
@@ -152,7 +159,10 @@ export class CombatManager {
 
     if (basicAttack && playerSprite) {
       this.getStore().useSkill(basicAttack.id);
-      enemy.hp -= (basicAttack.damage || 0) + (this.getStore().player.stats.str * 2);
+      const equipBonus = computeEquipmentBonuses(this.getStore().equipment);
+      const totalStr = this.getStore().player.stats.str + equipBonus.stats.str;
+      const totalDamage = (basicAttack.damage || 0) + equipBonus.damage + (totalStr * 2);
+      enemy.hp -= totalDamage;
 
       const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
       if (enemyPos) {
