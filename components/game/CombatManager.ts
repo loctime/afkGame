@@ -3,6 +3,8 @@ import { GameStore } from '../../stores/types';
 import { SkillEffectManager } from './SkillEffectManager';
 import { PlayerManager } from './PlayerManager';
 import { EnemyManager } from './EnemyManager';
+import { getTotalStats } from '../../core/systems/utils';
+import { GAME_CONFIG } from '../../core/balance/game-config';
 
 // Seconds between each combat round (player attacks + enemy counter-attacks)
 const ATTACK_INTERVAL = 1.5;
@@ -81,8 +83,10 @@ export class CombatManager {
           this.completeWave();
         }
       } else {
-        // Enemy attacks player — show hit animation
-        this.getStore().takeDamage(enemy.damage);
+        // Enemy attacks player — mitigate with VIT (0.5 per point, min 1), then show hit animation
+        const defStats = getTotalStats(this.getStore().player, this.getStore().equipment);
+        const mitigated = Math.max(1, enemy.damage - Math.floor(defStats.vit * 0.5));
+        this.getStore().takeDamage(mitigated);
         this.playerManager.changeAnimation('hit');
 
         setTimeout(() => {
@@ -152,7 +156,13 @@ export class CombatManager {
 
     if (basicAttack && playerSprite) {
       this.getStore().useSkill(basicAttack.id);
-      enemy.hp -= (basicAttack.damage || 0) + (this.getStore().player.stats.str * 2);
+      const player = this.getStore().player;
+      const equipment = this.getStore().equipment;
+      const totalStats = getTotalStats(player, equipment);
+      const weaponBonus = equipment.weapon?.damage || 0;
+      enemy.hp -= (basicAttack.damage || 0)
+        + (totalStats.str * GAME_CONFIG.STATS.STR_DAMAGE_MULTIPLIER)
+        + weaponBonus;
 
       const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
       if (enemyPos) {
