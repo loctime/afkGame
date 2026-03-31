@@ -11,80 +11,94 @@ export const GameHUD: React.FC = () => {
   const xpPercentage = (player.xp / player.xpToNext) * 100;
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm p-2 z-50">
-      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-        {/* Player Stats */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Heart className="w-4 h-4 text-red-500" />
-            <div className="w-16 bg-gray-700 rounded-full h-2">
+    <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm z-50"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
+      <div className="flex items-center gap-2 px-2 py-1 max-w-screen-xl mx-auto">
+
+        {/* Bars — stacked vertically, fill available space */}
+        <div className="flex-1 min-w-0 space-y-0.5">
+          {/* HP */}
+          <div className="flex items-center gap-1">
+            <Heart className="w-3 h-3 text-red-500 shrink-0" />
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
               <div
-                className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${hpPercentage}%` }}
               />
             </div>
-            <span className="text-xs text-white">{player.hp}/{player.maxHp}</span>
+            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
+              {player.hp}/{player.maxHp}
+            </span>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Zap className="w-4 h-4 text-blue-500" />
-            <div className="w-16 bg-gray-700 rounded-full h-2">
+          {/* MP */}
+          <div className="flex items-center gap-1">
+            <Zap className="w-3 h-3 text-blue-500 shrink-0" />
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
               <div
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${mpPercentage}%` }}
               />
             </div>
-            <span className="text-xs text-white">{player.mp}/{player.maxMp}</span>
+            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
+              {player.mp}/{player.maxMp}
+            </span>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <span className="text-xs text-yellow-500">XP</span>
-            <div className="w-16 bg-gray-700 rounded-full h-2">
+          {/* XP */}
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-yellow-500 shrink-0 w-3 text-center font-bold">XP</span>
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
               <div
-                className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                className="bg-yellow-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${xpPercentage}%` }}
               />
             </div>
-            <span className="text-xs text-white">{player.xp}/{player.xpToNext}</span>
+            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
+              {player.xp}/{player.xpToNext}
+            </span>
           </div>
         </div>
 
         {/* Center Info */}
-        <div className="flex items-center space-x-4">
-          <div className="text-center">
-            <div className="text-white font-bold text-sm">Lv.{player.level}</div>
-            <div className="text-xs text-gray-300">{player.gold} Gold</div>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Level + Gold */}
+          <div className="text-center leading-none">
+            <div className="text-white font-bold text-xs">Lv.{player.level}</div>
+            <div className="text-[10px] text-yellow-400 mt-0.5">{player.gold}g</div>
           </div>
 
-          <div className="text-center">
-            <div className="text-white font-bold text-sm">
-              {gameState.isInBossWave ? 'BOSS' : `Wave ${gameState.currentWave}`}
+          {/* Wave + Info button */}
+          <div className="text-center leading-none">
+            <div className="text-white font-bold text-xs">
+              {gameState.isInBossWave ? 'BOSS' : `W${gameState.currentWave}`}
             </div>
             <button
               onClick={() => setShowAreaInfo(!showAreaInfo)}
-              className="text-xs text-gray-400 hover:text-white transition-colors"
+              className="text-[10px] text-gray-400 mt-0.5"
             >
-              Area Info
+              Info
             </button>
           </div>
 
-          {/* AFK indicator — always active */}
-          <div className="px-2 py-1 bg-green-800/60 border border-green-600 rounded text-xs text-green-400 font-bold">
+          {/* AFK badge */}
+          <div className="px-1.5 py-0.5 bg-green-800/60 border border-green-600 rounded text-[10px] text-green-400 font-bold">
             AFK
           </div>
         </div>
 
         {/* Status indicator */}
-        <div className="flex items-center">
-          <span className={`text-xs font-semibold ${gameState.isFighting ? 'text-green-400' : 'text-yellow-400'}`}>
-            {gameState.isFighting ? 'Combate activo' : gameState.isInBossWave ? 'Boss esperando...' : 'Iniciando...'}
+        <div className="shrink-0 text-right">
+          <span className={`text-[10px] font-semibold ${gameState.isFighting ? 'text-green-400' : 'text-yellow-400'}`}>
+            {gameState.isFighting ? '⚔️' : gameState.isInBossWave ? '⚠️ Boss' : '...'}
           </span>
         </div>
       </div>
 
       {/* Area Info Dropdown */}
       {showAreaInfo && (
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-600 z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-600 z-50">
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-white font-semibold text-sm">Darkwood Forest</h4>
@@ -116,14 +130,14 @@ export const GameHUD: React.FC = () => {
 
             {gameState.isInBossWave && (
               <div className="mt-2 p-1 bg-red-900/20 border border-red-500 rounded text-xs">
-                <div className="text-red-400 font-bold">Boss en puerta!</div>
+                <div className="text-red-400 font-bold">¡Boss en puerta!</div>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Click outside to close dropdown */}
+      {/* Click outside to close */}
       {showAreaInfo && (
         <div
           className="fixed inset-0 z-40"

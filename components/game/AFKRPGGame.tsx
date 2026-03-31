@@ -105,19 +105,19 @@ const AFKRPGGame: React.FC = () => {
       {/* Game HUD */}
       <GameHUD />
 
-      {/* PIXI.js Canvas */}
+      {/* PIXI.js Canvas — always full-width on mobile, 2/3 on sm+ when side panel is open */}
       <canvas
         ref={canvasRef}
-        className={`absolute top-12 transition-all duration-300 ${
-          showSidePanel ? 'w-2/3' : 'w-full'
-        } ${isInventoryPanel ? 'right-0' : 'left-0'}`}
-        style={{ height: 'calc(100vh - 120px)' }}
+        className={`absolute top-12 left-0 transition-all duration-300 w-full ${
+          showSidePanel ? 'sm:w-2/3' : ''
+        } ${isInventoryPanel ? 'sm:left-auto sm:right-0' : ''}`}
+        style={{ height: 'calc(100dvh - 108px)' }}
       />
 
       {/* Overlay pre-boss — pausa antes del boss */}
       {showBossOverlay && activeTab === 'map' && (
         <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-900 border-2 border-red-600 rounded-xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
+          <div className="bg-gray-900 border-2 border-red-600 rounded-xl p-6 max-w-sm w-full mx-4 text-center shadow-2xl">
             <div className="text-5xl mb-4">⚔️</div>
             <h2 className="text-red-400 font-bold text-2xl mb-2">¡Atención!</h2>
             <p className="text-white font-semibold text-lg mb-1">
@@ -132,7 +132,7 @@ const AFKRPGGame: React.FC = () => {
             </p>
             <button
               onClick={handleBossConfirm}
-              className="w-full py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-lg rounded-lg transition-colors"
+              className="w-full py-3 bg-red-600 active:bg-red-800 text-white font-bold text-lg rounded-lg transition-colors"
             >
               ¡Enfrentar al Boss!
             </button>
@@ -140,23 +140,23 @@ const AFKRPGGame: React.FC = () => {
         </div>
       )}
 
-      {/* Side Panel for Character (Right Side) */}
+      {/* Character Panel */}
       {activeTab === 'character' && (
-        <div className="absolute top-12 right-0 w-1/3 h-full bg-gray-900/95 border-l border-gray-700 overflow-y-auto">
+        <div className="panel-overlay panel-overlay-right bg-gray-900/95 border-gray-700 sm:border-l overflow-y-auto">
           <CharacterPanel />
         </div>
       )}
 
-      {/* Side Panel for Inventory (Left Side) */}
+      {/* Inventory Panel */}
       {activeTab === 'inventory' && (
-        <div className="absolute top-12 left-0 w-1/3 h-full bg-gray-900/95 border-r border-gray-700 overflow-y-auto">
+        <div className="panel-overlay panel-overlay-left bg-gray-900/95 border-gray-700 sm:border-r overflow-y-auto">
           <InventoryPanel />
         </div>
       )}
 
       {/* Full Screen Content for Map and Settings */}
       {!showSidePanel && (
-        <div className="absolute top-12 left-0 right-0 bottom-16 overflow-y-auto">
+        <div className="absolute top-12 left-0 right-0 bottom-14 overflow-y-auto">
           {activeTab === 'map' && (
             <div className="absolute top-4 left-4 z-10">
               <MapPanel />
