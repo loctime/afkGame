@@ -5,7 +5,7 @@ import { PlayerManager } from './PlayerManager';
 import { EnemyManager } from './EnemyManager';
 
 // Seconds between each combat round (player attacks + enemy counter-attacks)
-const ATTACK_INTERVAL = 1.5;
+const ATTACK_INTERVAL = 2.5;
 
 export class CombatManager {
   private getStore: () => GameStore;
@@ -31,9 +31,7 @@ export class CombatManager {
   }
 
   public updateCombat(deltaTime: number) {
-    // DEBUG — quitar después
-    const _gs = this.getStore();
-    console.log('[CM] updateCombat called | isFighting:', _gs.gameState.isFighting, '| enemies:', _gs.renderState.enemies.length, '| deltaTime:', deltaTime.toFixed(4));
+    
 
     const player = this.getStore().player;
 
@@ -41,26 +39,21 @@ export class CombatManager {
     this.getStore().updateSkillCooldowns(deltaTime);
 
     if (this.getStore().renderState.enemies.length === 0) {
-      console.log('[CM] BLOCKED: no enemies in store');
       return;
     }
 
     // Accumulate time; only trigger a combat round once per ATTACK_INTERVAL seconds
     this.attackAccumulator += deltaTime;
-    console.log('[CM] attackAccumulator:', this.attackAccumulator.toFixed(4), '/ needed:', ATTACK_INTERVAL);
     if (this.attackAccumulator < ATTACK_INTERVAL) return;
     this.attackAccumulator -= ATTACK_INTERVAL;
 
     {
       const enemy = this.getStore().renderState.enemies[0];
-      console.log('[CM] ATTACK ROUND | enemy hp:', enemy.hp, '| player hp:', player.hp);
 
       // Intentar usar skills automáticamente
       const skillUsed = this.tryUseSkill(enemy);
-      console.log('[CM] tryUseSkill result:', skillUsed);
 
       if (!skillUsed) {
-        console.log('[CM] falling back to useBasicAttack');
         // Usar ataque básico si no se usó ningún skill
         this.useBasicAttack(enemy);
       }
@@ -125,6 +118,10 @@ export class CombatManager {
       this.getStore().useSkill(attackSkill.id);
       enemy.hp -= attackSkill.damage || 0;
 
+      if (enemyPos) {
+        this.playerManager.faceTarget(enemyPos.x);
+      }
+
       // Visual effects use screen position from EnemyManager; skip if sprite not found
       if (enemyPos) {
         if (attackSkill.id === 'fire_ball') {
@@ -155,6 +152,9 @@ export class CombatManager {
       enemy.hp -= (basicAttack.damage || 0) + (this.getStore().player.stats.str * 2);
 
       const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+      if (enemyPos) {
+        this.playerManager.faceTarget(enemyPos.x);
+      }
       if (enemyPos) {
         this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
       }

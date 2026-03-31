@@ -14,6 +14,7 @@ const AFKRPGGame: React.FC = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [gameEngine, setGameEngine] = useState<GameEngine | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const engineRef = React.useRef<GameEngine | null>(null);
   const gameStore = useGameStore();
   const { gameState } = useGameStore();
 
@@ -23,24 +24,26 @@ const AFKRPGGame: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (canvasRef.current && !gameEngine) {
-      const engine = new GameEngine(canvasRef.current, useGameStore.getState);
-      setGameEngine(engine);
+    if (!canvasRef.current || engineRef.current) return;
+
+    const engine = new GameEngine(canvasRef.current, useGameStore.getState);
+    engineRef.current = engine;
+    setGameEngine(engine);
 
       // Auto-arrancar: si hay boss pendiente, el overlay lo gestiona;
       // de lo contrario iniciar la wave actual automáticamente
-      setTimeout(() => {
-        const state = useGameStore.getState().gameState;
-        if (!(state.isInBossWave && !state.isFighting)) {
-          engine.startWave(state.currentWave);
-        }
-      }, 800);
-    }
+    const startTimeout = setTimeout(() => {
+      const state = useGameStore.getState().gameState;
+      if (!(state.isInBossWave && !state.isFighting)) {
+        engine.startWave(state.currentWave);
+      }
+    }, 800);
 
     return () => {
-      if (gameEngine) {
-        gameEngine.destroy();
-      }
+      clearTimeout(startTimeout);
+      engine.destroy();
+      engineRef.current = null;
+      setGameEngine(null);
     };
   }, []);
 
@@ -170,3 +173,4 @@ const AFKRPGGame: React.FC = () => {
 };
 
 export default AFKRPGGame;
+

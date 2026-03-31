@@ -1,5 +1,8 @@
 import * as PIXI from 'pixi.js';
 
+const ENABLE_FILTERS = false;
+const MAX_ACTIVE_EFFECTS = 20;
+
 interface SkillEffect {
   id: string;
   sprite: PIXI.Sprite;
@@ -19,7 +22,12 @@ export class SkillEffectManager {
     this.gameContainer = gameContainer;
   }
 
+  private canSpawnEffect() {
+    return this.skillEffects.length < MAX_ACTIVE_EFFECTS;
+  }
+
   public createBasicAttackEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
+    if (!this.canSpawnEffect()) return;
     const projectile = new PIXI.Graphics();
     projectile.beginFill(0xffff00);
     projectile.drawCircle(0, 0, 8);
@@ -29,7 +37,9 @@ export class SkillEffectManager {
     glow.beginFill(0xffff00, 0.5);
     glow.drawCircle(0, 0, 12);
     glow.endFill();
-    glow.filters = [new PIXI.BlurFilter(2, 2)];
+    if (ENABLE_FILTERS) {
+      glow.filters = [new PIXI.BlurFilter(2, 2)];
+    }
 
     const container = new PIXI.Container();
     container.addChild(glow);
@@ -51,6 +61,7 @@ export class SkillEffectManager {
   }
 
   public createFireballEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
+    if (!this.canSpawnEffect()) return;
     const fireball = new PIXI.Graphics();
     fireball.beginFill(0xff4400);
     fireball.drawCircle(0, 0, 12);
@@ -60,7 +71,9 @@ export class SkillEffectManager {
     glow.beginFill(0xff8800, 0.6);
     glow.drawCircle(0, 0, 18);
     glow.endFill();
-    glow.filters = [new PIXI.BlurFilter(3, 3)];
+    if (ENABLE_FILTERS) {
+      glow.filters = [new PIXI.BlurFilter(3, 3)];
+    }
 
     const particles = new PIXI.Graphics();
     for (let i = 0; i < 8; i++) {
@@ -103,7 +116,9 @@ export class SkillEffectManager {
     glow.beginFill(0x00ff00, 0.4);
     glow.drawCircle(0, 0, 30);
     glow.endFill();
-    glow.filters = [new PIXI.BlurFilter(4, 4)];
+    if (ENABLE_FILTERS) {
+      glow.filters = [new PIXI.BlurFilter(4, 4)];
+    }
     
     const container = new PIXI.Container();
     container.addChild(glow);
@@ -131,6 +146,7 @@ export class SkillEffectManager {
   }
 
   public createIceShardEffect(playerX: number, playerY: number, targetX: number, targetY: number) {
+    if (!this.canSpawnEffect()) return;
     const iceShard = new PIXI.Graphics();
     iceShard.beginFill(0x00ffff);
     iceShard.drawPolygon([-8, 0, 8, -6, 4, 0, 8, 6, -8, 0]);
@@ -140,7 +156,9 @@ export class SkillEffectManager {
     glow.beginFill(0x88ffff, 0.5);
     glow.drawCircle(0, 0, 15);
     glow.endFill();
-    glow.filters = [new PIXI.BlurFilter(2, 2)];
+    if (ENABLE_FILTERS) {
+      glow.filters = [new PIXI.BlurFilter(2, 2)];
+    }
 
     const particles = new PIXI.Graphics();
     for (let i = 0; i < 6; i++) {
@@ -293,7 +311,9 @@ export class SkillEffectManager {
       glow.beginFill(0xffaa00, 0.6);
       glow.drawCircle(0, 0, 35);
       glow.endFill();
-      glow.filters = [new PIXI.BlurFilter(5, 5)];
+      if (ENABLE_FILTERS) {
+        glow.filters = [new PIXI.BlurFilter(5, 5)];
+      }
       
       const container = new PIXI.Container();
       container.addChild(glow);

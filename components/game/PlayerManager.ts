@@ -1,10 +1,13 @@
 import * as PIXI from 'pixi.js';
 
+const ENABLE_FILTERS = false;
+
 export class PlayerManager {
   private player: PIXI.AnimatedSprite | null = null;
   private playerAnimations: Map<string, PIXI.Texture[]> = new Map();
   private currentAnimation: string = 'idle';
   private pulseEffect: NodeJS.Timeout | null = null;
+  private facing: 1 | -1 = 1;
   private gameContainer: PIXI.Container;
   private app: PIXI.Application;
 
@@ -39,9 +42,13 @@ export class PlayerManager {
     this.player.alpha = 1.0;
     
     // Agregar filtro de brillo más potente
-    const brightnessFilter = new PIXI.ColorMatrixFilter();
-    brightnessFilter.brightness(1.8, true);
-    this.player.filters = [brightnessFilter];
+    if (ENABLE_FILTERS) {
+      const brightnessFilter = new PIXI.ColorMatrixFilter();
+      brightnessFilter.brightness(1.8, true);
+      this.player.filters = [brightnessFilter];
+    } else {
+      this.player.filters = [];
+    }
     
     // Agregar fondo circular claro detrás del alien
     this.addPlayerBackground();
@@ -113,6 +120,7 @@ export class PlayerManager {
 
   private addGlowEffect() {
     if (!this.player) return;
+    if (!ENABLE_FILTERS) return;
     
     // Crear un contenedor para el efecto de resplandor
     const glowContainer = new PIXI.Container();
@@ -154,7 +162,7 @@ export class PlayerManager {
     
     const pulse = () => {
       if (this.player && this.currentAnimation === 'idle') {
-        this.player.scale.x = 1.0 + Math.sin(Date.now() * 0.003) * 0.05;
+        this.player.scale.x = this.facing * (1.0 + Math.sin(Date.now() * 0.003) * 0.05);
         this.player.scale.y = 1.0 + Math.sin(Date.now() * 0.003) * 0.05;
       }
     };
@@ -169,7 +177,7 @@ export class PlayerManager {
     }
     
     if (this.player) {
-      this.player.scale.x = 1.0;
+      this.player.scale.x = this.facing * 1.0;
       this.player.scale.y = 1.0;
     }
   }
@@ -180,9 +188,13 @@ export class PlayerManager {
     this.player.tint = 0x66ccff;
     this.player.alpha = 1.0;
     
-    const brightnessFilter = new PIXI.ColorMatrixFilter();
-    brightnessFilter.brightness(2.0, true);
-    this.player.filters = [brightnessFilter];
+    if (ENABLE_FILTERS) {
+      const brightnessFilter = new PIXI.ColorMatrixFilter();
+      brightnessFilter.brightness(2.0, true);
+      this.player.filters = [brightnessFilter];
+    } else {
+      this.player.filters = [];
+    }
   }
 
   public resetVisibility() {
@@ -191,13 +203,26 @@ export class PlayerManager {
     this.player.tint = 0x44aaff;
     this.player.alpha = 1.0;
     
-    const brightnessFilter = new PIXI.ColorMatrixFilter();
-    brightnessFilter.brightness(1.8, true);
-    this.player.filters = [brightnessFilter];
+    if (ENABLE_FILTERS) {
+      const brightnessFilter = new PIXI.ColorMatrixFilter();
+      brightnessFilter.brightness(1.8, true);
+      this.player.filters = [brightnessFilter];
+    } else {
+      this.player.filters = [];
+    }
   }
 
   public getPlayer() {
     return this.player;
+  }
+
+  public faceTarget(targetX: number) {
+    if (!this.player) return;
+    const dx = targetX - this.player.x;
+    if (Math.abs(dx) < 1) return;
+    this.facing = dx >= 0 ? 1 : -1;
+    const absScaleX = Math.abs(this.player.scale.x) || 1;
+    this.player.scale.x = absScaleX * this.facing;
   }
 
   public updatePosition(x: number, y: number) {
