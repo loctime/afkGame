@@ -1,4 +1,5 @@
 import { Item } from '../types/game';
+import { ITEM_RARITIES } from '../core/balance/game-config';
 
 export const generateInitialItems = (): Item[] => {
   const items: Item[] = [];
@@ -185,4 +186,36 @@ export const generateInitialItems = (): Item[] => {
   );
   
   return items;
+};
+
+const DROP_ITEM_TYPES = ['weapon', 'chest', 'helmet', 'boots', 'gloves', 'ring', 'necklace', 'pants', 'shield'] as const;
+
+export const generateDropItem = (wave: number): Item => {
+  const roll = Math.random();
+  let rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  if (roll < ITEM_RARITIES.LEGENDARY.dropRate) {
+    rarity = 'legendary';
+  } else if (roll < ITEM_RARITIES.LEGENDARY.dropRate + ITEM_RARITIES.EPIC.dropRate) {
+    rarity = 'epic';
+  } else if (roll < ITEM_RARITIES.LEGENDARY.dropRate + ITEM_RARITIES.EPIC.dropRate + ITEM_RARITIES.RARE.dropRate) {
+    rarity = 'rare';
+  } else {
+    rarity = 'common';
+  }
+
+  const type = DROP_ITEM_TYPES[Math.floor(Math.random() * DROP_ITEM_TYPES.length)];
+  const multiplier = ITEM_RARITIES[rarity.toUpperCase() as keyof typeof ITEM_RARITIES].statMultiplier;
+  const waveBonus = Math.floor(wave / 10) + 1;
+  const baseStats = Math.ceil(Math.random() * 3 * waveBonus * multiplier);
+
+  return {
+    id: `drop_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    name: `${rarity.charAt(0).toUpperCase() + rarity.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+    type,
+    rarity,
+    stats: { str: baseStats, dex: baseStats, int: baseStats, vit: baseStats },
+    damage: type === 'weapon' ? baseStats * 3 : undefined,
+    defense: type !== 'weapon' ? baseStats * 2 : undefined,
+    value: baseStats * 10 * waveBonus,
+  };
 };

@@ -5,6 +5,7 @@ import { PlayerManager } from './PlayerManager';
 import { EnemyManager } from './EnemyManager';
 import { getTotalStats } from '../../core/systems/utils';
 import { GAME_CONFIG } from '../../core/balance/game-config';
+import { generateDropItem } from '../../utils/itemGenerator';
 
 // Seconds between each combat round (player attacks + enemy counter-attacks)
 const ATTACK_INTERVAL = 2.5;
@@ -64,6 +65,13 @@ export class CombatManager {
         // Enemy defeated — use store actions so Zustand triggers re-renders
         this.getStore().gainXp(enemy.xpReward);
         this.getStore().gainGold(enemy.goldReward);
+
+        // Drop check: 10% chance of item drop
+        if (Math.random() < GAME_CONFIG.DROPS.BASE_DROP_RATE) {
+          const currentWave = this.getStore().gameState.currentWave;
+          const droppedItem = generateDropItem(currentWave);
+          this.getStore().addItem(droppedItem);
+        }
 
         // Remove sprite via EnemyManager (it owns all PIXI objects)
         this.enemyManager.removeEnemy(enemy.id);
