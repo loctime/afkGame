@@ -80,11 +80,14 @@ export class CombatManager {
         const defStats = getTotalStats(this.getStore().player, this.getStore().equipment);
         const mitigated = Math.max(1, enemy.damage - Math.floor(defStats.vit * 0.5));
         this.getStore().takeDamage(mitigated);
-        this.playerManager.changeAnimation('hit');
 
+        // Delay hit animation so attack animation ('run'=verde) is visible first (~250ms)
         setTimeout(() => {
-          this.playerManager.changeAnimation('idle');
-        }, 500);
+          this.playerManager.changeAnimation('hit');
+          setTimeout(() => {
+            this.playerManager.changeAnimation('idle');
+          }, 500);
+        }, 250);
 
         // Read fresh HP after damage
         if (this.getStore().player.hp <= 0) {
