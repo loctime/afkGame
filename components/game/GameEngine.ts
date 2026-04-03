@@ -120,6 +120,7 @@ export class GameEngine {
     // Spawn new enemies and push them through the store so Zustand triggers re-renders
     const enemies = this.enemyManager.spawnEnemiesForWave(wave);
     this.getStore().setEnemies(enemies);
+    this.combatManager.resetAccumulator();
     this.getStore().setIsFighting(true);
   }
 
@@ -143,6 +144,7 @@ export class GameEngine {
     }
 
     // Destruir managers
+    this.combatManager.destroy();
     this.playerManager.destroy();
     this.skillEffectManager.clearAllEffects();
     this.enemyManager.clearAllEnemies();

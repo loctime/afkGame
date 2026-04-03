@@ -18,6 +18,7 @@ export class CombatManager {
   private onStartWave: (wave: number) => void;
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
+  private postBossTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     getStore: () => GameStore,
@@ -193,7 +194,10 @@ export class CombatManager {
       // Boss derrotado — avanzar a la siguiente fase
       this.getStore().winBossFight();
       const afterBossWave = this.getStore().gameState.currentWave;
-      setTimeout(() => this.onStartWave(afterBossWave), 1000);
+      this.postBossTimeout = setTimeout(() => {
+        this.postBossTimeout = null;
+        this.onStartWave(afterBossWave);
+      }, 1000);
     } else if (nextWave % 10 === 0) {
       // Siguiente wave es boss — pausar y esperar confirmación del jugador
       this.getStore().setWave(nextWave);       // isInBossWave = true
@@ -225,5 +229,16 @@ export class CombatManager {
       // Reiniciar combate en la wave de inicio de fase
       setTimeout(() => this.onStartWave(reviveWave), 500);
     }, 2000);
+  }
+
+  public resetAccumulator() {
+    this.attackAccumulator = 0;
+  }
+
+  public destroy() {
+    if (this.postBossTimeout) {
+      clearTimeout(this.postBossTimeout);
+      this.postBossTimeout = null;
+    }
   }
 }
