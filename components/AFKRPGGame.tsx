@@ -12,8 +12,10 @@ export default function AFKRPGApp() {
     if (!isInitialized) {
       // Add some initial items for testing
       setTimeout(() => {
-        const items = generateInitialItems();
-        items.forEach(item => useGameStore.getState().addItem(item));
+        if (useGameStore.getState().inventory.length === 0) {
+          const items = generateInitialItems();
+          items.forEach(item => useGameStore.getState().addItem(item));
+        }
         setIsInitialized(true);
       }, 1000);
     }
