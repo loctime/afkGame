@@ -9,6 +9,7 @@ export interface GameStore {
   gainGold: (amount: number) => void;
   takeDamage: (amount: number) => void;
   heal: (amount: number) => void;
+  regenerateMana: (deltaTime: number) => void;
 
   // Game State
   gameState: GameState;

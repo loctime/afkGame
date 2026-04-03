@@ -62,4 +62,13 @@ export const createPlayerActions = (set: any, get: () => GameStore) => ({
       gold: state.player.gold + amount
     }
   })),
+
+  regenerateMana: (deltaTime: number) => set((state: GameStore) => {
+    const regenRate = 2; // MP por segundo
+    const newMp = Math.min(state.player.maxMp, state.player.mp + regenRate * deltaTime);
+    if (newMp === state.player.mp) return {};
+    return {
+      player: { ...state.player, mp: newMp }
+    };
+  }),
 });

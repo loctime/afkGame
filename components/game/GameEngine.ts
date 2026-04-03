@@ -88,6 +88,8 @@ export class GameEngine {
     const gameState = this.getStore().gameState;
     const player = this.playerManager.getPlayer();
 
+    this.getStore().regenerateMana(deltaTime);
+
     if (gameState.isAfk && gameState.isFighting) {
       this.combatManager.updateCombat(deltaTime);
     }
