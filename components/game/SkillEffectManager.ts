@@ -13,10 +13,17 @@ interface SkillEffect {
   type: string;
 }
 
+interface DamageNumber {
+  text: PIXI.Text;
+  vy: number;
+  life: number;
+}
+
 export class SkillEffectManager {
   private skillEffects: SkillEffect[] = [];
   private skillEffectId: number = 0;
   private gameContainer: PIXI.Container;
+  private damageNumbers: DamageNumber[] = [];
 
   constructor(gameContainer: PIXI.Container) {
     this.gameContainer = gameContainer;
@@ -272,7 +279,35 @@ export class SkillEffectManager {
     animate();
   }
 
+  public createDamageNumber(x: number, y: number, amount: number, isCritical: boolean = false) {
+    const label = isCritical ? `!${amount}` : `${amount}`;
+    const style = new PIXI.TextStyle({
+      fontSize: isCritical ? 22 : 16,
+      fill: isCritical ? '#ff4400' : '#ffffff',
+      fontWeight: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
+    });
+    const text = new PIXI.Text(label, style);
+    text.anchor.set(0.5);
+    text.x = x;
+    text.y = y;
+    this.gameContainer.addChild(text);
+    this.damageNumbers.push({ text, vy: 50, life: 0.8 });
+  }
+
   public updateSkillEffects(deltaTime: number) {
+    for (let i = this.damageNumbers.length - 1; i >= 0; i--) {
+      const dn = this.damageNumbers[i];
+      dn.life -= deltaTime;
+      dn.text.y -= dn.vy * deltaTime;
+      dn.text.alpha = Math.max(0, dn.life / 0.8);
+      if (dn.life <= 0) {
+        this.gameContainer.removeChild(dn.text);
+        this.damageNumbers.splice(i, 1);
+      }
+    }
+
     for (let i = this.skillEffects.length - 1; i >= 0; i--) {
       const effect = this.skillEffects[i];
       
@@ -423,5 +458,12 @@ export class SkillEffectManager {
       }
     });
     this.skillEffects = [];
+
+    this.damageNumbers.forEach(dn => {
+      if (dn.text.parent) {
+        dn.text.parent.removeChild(dn.text);
+      }
+    });
+    this.damageNumbers = [];
   }
 }

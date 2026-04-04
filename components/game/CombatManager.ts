@@ -132,14 +132,11 @@ export class CombatManager {
     const attackSkill = skills.find(s => s.type === 'attack' && s.currentCooldown === 0 && s.id !== 'basic_attack');
     if (attackSkill && player.mp >= attackSkill.manaCost) {
       this.getStore().useSkill(attackSkill.id);
-      enemy.hp -= attackSkill.damage || 0;
+      const skillDamage = attackSkill.damage || 0;
+      enemy.hp -= skillDamage;
 
       if (enemyPos) {
         this.playerManager.faceTarget(enemyPos.x);
-      }
-
-      // Visual effects use screen position from EnemyManager; skip if sprite not found
-      if (enemyPos) {
         if (attackSkill.id === 'fire_ball') {
           this.skillEffectManager.createFireballEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
         } else if (attackSkill.id === 'ice_shard') {
@@ -149,6 +146,7 @@ export class CombatManager {
         } else {
           this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
         }
+        this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, skillDamage, true);
       }
 
       this.playerManager.changeAnimation('run');
@@ -169,16 +167,16 @@ export class CombatManager {
       const equipment = this.getStore().equipment;
       const totalStats = getTotalStats(player, equipment);
       const weaponBonus = equipment.weapon?.damage || 0;
-      enemy.hp -= (basicAttack.damage || 0)
+      const damageAmount = (basicAttack.damage || 0)
         + (totalStats.str * GAME_CONFIG.STATS.STR_DAMAGE_MULTIPLIER)
         + weaponBonus;
+      enemy.hp -= damageAmount;
 
       const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
       if (enemyPos) {
         this.playerManager.faceTarget(enemyPos.x);
-      }
-      if (enemyPos) {
         this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+        this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, damageAmount);
       }
 
       this.playerManager.changeAnimation('run');
