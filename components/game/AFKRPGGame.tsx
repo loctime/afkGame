@@ -13,6 +13,7 @@ import { useGameStore } from '../../stores/gameStore';
 const AFKRPGGame: React.FC = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [gameEngine, setGameEngine] = useState<GameEngine | null>(null);
+  const [isEngineReady, setIsEngineReady] = useState(false);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const engineRef = React.useRef<GameEngine | null>(null);
   const gameStore = useGameStore();
@@ -39,8 +40,13 @@ const AFKRPGGame: React.FC = () => {
       }
     }, 800);
 
+    const readyTimeout = setTimeout(() => {
+      setIsEngineReady(true);
+    }, 1200);
+
     return () => {
       clearTimeout(startTimeout);
+      clearTimeout(readyTimeout);
       engine.destroy();
       engineRef.current = null;
       setGameEngine(null);
@@ -113,6 +119,20 @@ const AFKRPGGame: React.FC = () => {
         } ${isInventoryPanel ? 'sm:left-auto sm:right-0' : ''}`}
         style={{ height: 'calc(100dvh - 108px)' }}
       />
+
+      {/* Loading overlay — visible until PIXI assets finish loading */}
+      {!isEngineReady && (
+        <div
+          className="absolute top-12 left-0 right-0 z-20 flex items-center justify-center bg-gray-900 transition-opacity duration-500"
+          style={{ height: 'calc(100dvh - 108px)' }}
+        >
+          <div className="text-center">
+            <div className="text-6xl mb-4">⚔️</div>
+            <p className="text-gray-300 text-xl animate-pulse">Cargando partida...</p>
+            <p className="text-yellow-400 text-sm mt-2">AFK RPG</p>
+          </div>
+        </div>
+      )}
 
       {/* Overlay pre-boss — pausa antes del boss */}
       {showBossOverlay && activeTab === 'map' && (
