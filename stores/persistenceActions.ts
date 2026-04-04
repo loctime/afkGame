@@ -2,6 +2,8 @@ import { get as getFromDB, set as setToDB, del as delFromDB } from 'idb-keyval';
 import { GameStore } from './types';
 import { initialSkills, initialEquipment } from './initialState';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 export const createPersistenceActions = (set: any, get: () => GameStore) => ({
   saveGame: async () => {
     const state = get();
@@ -31,7 +33,7 @@ export const createPersistenceActions = (set: any, get: () => GameStore) => ({
         get().calculateOfflineRewards();
       }
     } catch (error) {
-      console.error('Error loading game:', error);
+      if (IS_DEV) console.error('Error loading game:', error);
     }
   },
   
@@ -58,8 +60,7 @@ export const createPersistenceActions = (set: any, get: () => GameStore) => ({
       
       get().gainXp(xpGained);
       
-      // Show offline rewards modal (you can implement this)
-      console.log(`Offline Rewards: ${xpGained} XP, ${goldGained} Gold`);
+      if (IS_DEV) console.log(`Offline Rewards: ${xpGained} XP, ${goldGained} Gold`);
     }
   },
 });

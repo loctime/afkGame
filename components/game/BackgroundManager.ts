@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 export class BackgroundManager {
   private backgroundLayers: PIXI.Sprite[] = [];
   private currentBackground: number = 1;
@@ -38,7 +40,7 @@ export class BackgroundManager {
         // Agregar al contenedor del juego (al fondo)
         this.gameContainer.addChildAt(sprite, 0);
       } catch (error) {
-        console.warn(`No se pudo cargar Plan ${i} del background ${backgroundNumber}`);
+        if (IS_DEV) console.warn(`No se pudo cargar Plan ${i} del background ${backgroundNumber}`);
       }
     }
   }

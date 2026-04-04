@@ -1,6 +1,9 @@
 import * as PIXI from 'pixi.js';
 import { EnemyData } from '../../types/game';
 
+const MAX_ENEMY_SIZE = 64;
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 export class EnemyManager {
   private enemies: Map<string, PIXI.AnimatedSprite> = new Map();
   private enemyAnimations: Map<string, PIXI.Texture[]> = new Map();
@@ -34,13 +37,24 @@ export class EnemyManager {
       animatedSprite.x = enemy.x;
       animatedSprite.y = enemy.y;
       animatedSprite.anchor.set(0.5);
-      
-      // Ajustar tamaño según el nivel (monstruos más grandes en niveles altos)
-      const baseSize = 40;
-      const sizeMultiplier = 1 + (enemy.level * 0.1);
-      animatedSprite.width = baseSize * sizeMultiplier;
-      animatedSprite.height = baseSize * sizeMultiplier;
-      
+
+      const baseSize = 32;
+      const targetSize = Math.min(baseSize + enemy.level * 1.5, MAX_ENEMY_SIZE);
+      const applyEnemyScaleFromTexture = () => {
+        const w = animatedSprite.texture.width;
+        if (w <= 0) return;
+        const scale = targetSize / w;
+        animatedSprite.scale.set(scale);
+      };
+      const baseTex = animatedSprite.texture.baseTexture;
+      if (baseTex.valid) {
+        applyEnemyScaleFromTexture();
+      } else {
+        baseTex.on('loaded', () => {
+          applyEnemyScaleFromTexture();
+        });
+      }
+
       // Configurar animación más rápida para que sea visible
       animatedSprite.animationSpeed = 0.2;
       animatedSprite.play();
@@ -69,7 +83,7 @@ export class EnemyManager {
       return animatedSprite;
     } catch (error) {
       // Fallback a rectángulo rojo animado si no se puede cargar el sprite
-      console.warn(`No se pudo cargar el monstruo ${monsterIndex}, usando fallback`);
+      if (IS_DEV) console.warn(`No se pudo cargar el monstruo ${monsterIndex}, usando fallback`);
       const graphics = new PIXI.Graphics();
       graphics.beginFill(0xff0000);
       graphics.drawRect(0, 0, 28, 28);
@@ -81,9 +95,10 @@ export class EnemyManager {
       animatedSprite.x = enemy.x;
       animatedSprite.y = enemy.y;
       animatedSprite.anchor.set(0.5);
+      animatedSprite.scale.set(1);
       animatedSprite.animationSpeed = 0.2;
       animatedSprite.play();
-      
+
       this.gameContainer.addChild(animatedSprite);
       return animatedSprite;
     }
@@ -121,7 +136,7 @@ export class EnemyManager {
       frames.push(baseTexture);
       
     } catch (error) {
-      console.warn(`Error loading monster sprite ${monsterIndex}:`, error);
+      if (IS_DEV) console.warn(`Error loading monster sprite ${monsterIndex}:`, error);
       // Crear un sprite de fallback
       const graphics = new PIXI.Graphics();
       graphics.beginFill(0xff0000);
