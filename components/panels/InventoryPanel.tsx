@@ -286,7 +286,7 @@ export const InventoryPanel: React.FC = () => {
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); setSelectedSlot(null); setSelectedInvItem(null); }}
-              className={`flex-1 py-2.5 text-xs font-bold tracking-wider transition-colors ${
+              className={`flex-1 py-3 text-sm font-bold tracking-wider transition-colors ${
                 activeTab === tab
                   ? 'text-cyan-400 border-b-2 border-cyan-400 -mb-px'
                   : 'text-gray-500 hover:text-gray-300'
@@ -307,7 +307,7 @@ export const InventoryPanel: React.FC = () => {
               <button
                 key={slotStr}
                 onClick={() => handleSlotClick(slotKey)}
-                className={`rounded-lg border-2 p-2 flex flex-col items-center justify-center min-h-[80px] transition-all ${
+                className={`rounded-lg border-2 p-3 flex flex-col items-center justify-center min-h-[88px] transition-all ${
                   item
                     ? `${RARITY_BORDER[item.rarity]} ${RARITY_CARD_BG[item.rarity]} hover:opacity-90`
                     : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
@@ -343,13 +343,21 @@ export const InventoryPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Sidebar (desktop) ────────────────────────────────────── */}
+      {/* ── Panel adaptativo: bottom sheet (móvil) / sidebar (desktop) ── */}
       {selectedSlot && (
         <>
           <div className="fixed inset-0 bg-black/60 z-40" onClick={closePanel} />
-          <div className="fixed right-0 top-0 bottom-0 w-1/2 bg-gray-900 border-l-2 border-gray-700 z-50 flex flex-col"
-            style={{ maxWidth: '600px' }}
+          <div className="fixed bottom-0 left-0 right-0 sm:bottom-0 sm:top-0 sm:left-auto sm:right-0
+                          sm:w-1/2 sm:max-w-[600px]
+                          max-h-[75vh] sm:max-h-none
+                          bg-gray-900 border-t-2 sm:border-t-0 sm:border-l-2 border-gray-700
+                          z-50 flex flex-col rounded-t-2xl sm:rounded-none"
           >
+            {/* Manija visual (solo móvil) */}
+            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+              <div className="w-10 h-1 bg-gray-600 rounded-full" />
+            </div>
+
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 flex-shrink-0">
               <div>

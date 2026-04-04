@@ -31,7 +31,7 @@ export const GameHUD: React.FC = () => {
                 }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+            <span className="text-xs text-gray-300 shrink-0 w-auto text-right tabular-nums">
               {Math.floor(player.hp)}/{player.maxHp}
             </span>
           </div>
@@ -45,21 +45,21 @@ export const GameHUD: React.FC = () => {
                 style={{ width: `${mpPercentage}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+            <span className="text-xs text-gray-300 shrink-0 w-auto text-right tabular-nums">
               {Math.floor(player.mp)}/{player.maxMp}
             </span>
           </div>
 
           {/* XP */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-yellow-500 shrink-0 w-3 text-center font-bold">XP</span>
+            <span className="text-xs text-yellow-500 shrink-0 w-3 text-center font-bold">XP</span>
             <div className="flex-1 bg-gray-700 rounded-full h-2">
               <div
                 className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${xpPercentage}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+            <span className="text-xs text-gray-300 shrink-0 w-auto text-right tabular-nums">
               {Math.floor(player.xp)}/{player.xpToNext}
             </span>
           </div>
@@ -70,7 +70,7 @@ export const GameHUD: React.FC = () => {
           {/* Level + Gold */}
           <div className="text-center leading-none">
             <div className="text-white font-bold text-xs">Lv.{player.level}</div>
-            <div className="text-[10px] text-yellow-400 mt-0.5">🪙{player.gold.toLocaleString()}</div>
+            <div className="text-xs text-yellow-400 mt-0.5">🪙{player.gold.toLocaleString()}</div>
           </div>
 
           {/* Wave + Info button */}
@@ -80,14 +80,14 @@ export const GameHUD: React.FC = () => {
             </div>
             <button
               onClick={() => setShowAreaInfo(!showAreaInfo)}
-              className="text-[10px] text-gray-400 mt-0.5"
+              className="text-xs text-gray-400 mt-0.5"
             >
               Info
             </button>
           </div>
 
           {/* AFK badge */}
-          <div className="px-1.5 py-0.5 bg-green-800/60 border border-green-600 rounded text-[10px] text-green-400 font-bold animate-pulse">
+          <div className="px-1.5 py-0.5 bg-green-800/60 border border-green-600 rounded text-xs text-green-400 font-bold animate-pulse">
             AFK
           </div>
         </div>
@@ -102,7 +102,7 @@ export const GameHUD: React.FC = () => {
 
       {/* Area Info Dropdown */}
       {showAreaInfo && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-600 z-50">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[min(256px,calc(100vw-24px))] bg-gray-800 rounded-lg shadow-lg border border-gray-600 z-50">
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-white font-semibold text-sm">Darkwood Forest</h4>

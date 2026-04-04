@@ -56,7 +56,7 @@ export const SkillsPanel: React.FC = () => {
                 
                 <p className="text-gray-300 text-sm mt-1">{skill.description}</p>
                 
-                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
+                <div className="flex items-center space-x-3 flex-wrap gap-y-1 mt-2 text-xs text-gray-400">
                   {skill.damage && (
                     <span>Daño: {Math.round(skill.damage)}</span>
                   )}
@@ -95,7 +95,7 @@ export const SkillsPanel: React.FC = () => {
                 {skill.level < skill.maxLevel && (
                   <button
                     onClick={() => handleUpgrade(skill.id)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded transition-colors min-w-[64px]"
                   >
                     Mejorar
                   </button>

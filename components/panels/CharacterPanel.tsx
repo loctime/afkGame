@@ -43,7 +43,7 @@ export const CharacterPanel: React.FC = () => {
                 <button
                   onClick={() => allocatePoint(stat as keyof Stats)}
                   disabled={player.unallocatedPoints === 0}
-                  className="w-6 h-6 bg-blue-600 text-white rounded-full disabled:bg-gray-600 disabled:cursor-not-allowed text-sm"
+                  className="w-9 h-9 bg-blue-600 text-white rounded-full disabled:bg-gray-600 disabled:cursor-not-allowed text-sm font-bold flex items-center justify-center flex-shrink-0"
                 >
                   +
                 </button>
