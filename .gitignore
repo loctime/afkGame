@@ -41,3 +41,6 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Claude files (duplicate directory)
+claude_files/
