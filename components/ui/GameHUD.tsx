@@ -9,6 +9,7 @@ export const GameHUD: React.FC = () => {
   const hpPercentage = (player.hp / player.maxHp) * 100;
   const mpPercentage = (player.mp / player.maxMp) * 100;
   const xpPercentage = (player.xp / player.xpToNext) * 100;
+  const isLowHp = hpPercentage < 30;
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm z-50"
@@ -20,43 +21,46 @@ export const GameHUD: React.FC = () => {
         <div className="flex-1 min-w-0 space-y-0.5">
           {/* HP */}
           <div className="flex items-center gap-1">
-            <Heart className="w-3 h-3 text-red-500 shrink-0" />
-            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+            <Heart className={`w-3 h-3 shrink-0 ${isLowHp ? 'text-red-400 animate-pulse' : 'text-red-500'}`} />
+            <div className="flex-1 bg-gray-700 rounded-full h-2">
               <div
-                className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${hpPercentage}%` }}
+                className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${hpPercentage}%`,
+                  ...(isLowHp && { filter: 'drop-shadow(0 0 4px #ef4444)' }),
+                }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
-              {player.hp}/{player.maxHp}
+            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+              {Math.floor(player.hp)}/{player.maxHp}
             </span>
           </div>
 
           {/* MP */}
           <div className="flex items-center gap-1">
             <Zap className="w-3 h-3 text-blue-500 shrink-0" />
-            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+            <div className="flex-1 bg-gray-700 rounded-full h-2">
               <div
-                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${mpPercentage}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
-              {player.mp}/{player.maxMp}
+            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+              {Math.floor(player.mp)}/{player.maxMp}
             </span>
           </div>
 
           {/* XP */}
           <div className="flex items-center gap-1">
             <span className="text-[10px] text-yellow-500 shrink-0 w-3 text-center font-bold">XP</span>
-            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+            <div className="flex-1 bg-gray-700 rounded-full h-2">
               <div
-                className="bg-yellow-500 h-1.5 rounded-full transition-all duration-300"
+                className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${xpPercentage}%` }}
               />
             </div>
-            <span className="text-[10px] text-gray-300 shrink-0 w-14 text-right tabular-nums">
-              {player.xp}/{player.xpToNext}
+            <span className="text-[10px] text-gray-300 shrink-0 w-auto text-right tabular-nums">
+              {Math.floor(player.xp)}/{player.xpToNext}
             </span>
           </div>
         </div>
@@ -66,7 +70,7 @@ export const GameHUD: React.FC = () => {
           {/* Level + Gold */}
           <div className="text-center leading-none">
             <div className="text-white font-bold text-xs">Lv.{player.level}</div>
-            <div className="text-[10px] text-yellow-400 mt-0.5">{player.gold}g</div>
+            <div className="text-[10px] text-yellow-400 mt-0.5">🪙{player.gold.toLocaleString()}</div>
           </div>
 
           {/* Wave + Info button */}
@@ -83,14 +87,14 @@ export const GameHUD: React.FC = () => {
           </div>
 
           {/* AFK badge */}
-          <div className="px-1.5 py-0.5 bg-green-800/60 border border-green-600 rounded text-[10px] text-green-400 font-bold">
+          <div className="px-1.5 py-0.5 bg-green-800/60 border border-green-600 rounded text-[10px] text-green-400 font-bold animate-pulse">
             AFK
           </div>
         </div>
 
         {/* Status indicator */}
         <div className="shrink-0 text-right">
-          <span className={`text-[10px] font-semibold ${gameState.isFighting ? 'text-green-400' : 'text-yellow-400'}`}>
+          <span className={`text-xs font-semibold ${gameState.isFighting ? 'text-green-400' : 'text-yellow-400'}`}>
             {gameState.isFighting ? '⚔️' : gameState.isInBossWave ? '⚠️ Boss' : '...'}
           </span>
         </div>
