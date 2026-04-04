@@ -1,0 +1,54 @@
+// renombrar-iconos.mjs
+import fs from "fs";
+import path from "path";
+
+const mapping = {
+  "icon3.png": "Icon3 El Calvito Venennus.png",
+  "icon7.png": "Icon7 Dentón Incomible.png",
+  "icon10.png": "Icon10 Honguito Le Suicide.png",
+  "icon34.png": "Icon34 Diablillo Burnout.png",
+  "icon15.png": "Icon15 Calabacita Rabiossa.png",
+  "icon16.png": "Icon16 Pumpkin-chan Poseido.png",
+  "icon20.png": "Icon20 Tentaculín el Sensible.png",
+  "icon32.png": "Icon32 Dracofóbico.png",
+  "icon25.png": "Icon25 Yeti de Heladera.png",
+  "icon40.png": "Icon40 Honguito Vagabundo.png",
+  "icon35.png": "Icon35 Escorpio Express.png",
+  "icon30.png": "Icon30 Gelatina con Ansiedad.png",
+  "icon43.png": "Icon43 Cerberito de Patio.png",
+  "icon29.png": "Icon29 Gelatinoso Depresivo.png",
+  "icon38.png": "Icon38 Murciélago Emo.png",
+  "icon41.png": "Icon41 Pollo Resucitado.png",
+  "icon27.png": "Icon27 Cabezón Psicópata.png",
+  "icon33.png": "Icon33 Bugs Bunny Loco.png",
+  "icon4.png": "Icon4 Osito Hongocida.png",
+  "icon19.png": "Icon19 Florcita Depresiva Power.png",
+  "icon39.png": "Icon39 Bicho del Bajo Presupuesto.png",
+  "icon37.png": "Icon37 Pájaro Traumado.png",
+  "icon48.png": "Icon48 Demonio Low Cost.png",
+  "icon42.png": "Icon42 Abeja de Barrio.png",
+  "icon22.png": "Icon22 Fantasma de tu Ex.png",
+  "icon5.png": "Icon5 Gato Pirata del Inframundo.png",
+  "icon14.png": "Icon14 Araña Pyromaniaca.png"
+};
+
+const carpetas = [
+  "C:/Users/User/Desktop/Proyectos/ControlGames/AFK-GAME/assets/sprites/monsters/PNG/Background",
+  "C:/Users/User/Desktop/Proyectos/ControlGames/AFK-GAME/assets/sprites/monsters/PNG/Transperent"
+];
+
+function renombrar(carpeta) {
+  for (const [viejo, nuevo] of Object.entries(mapping)) {
+    const rutaVieja = path.join(carpeta, viejo);
+    const rutaNueva = path.join(carpeta, nuevo);
+
+    if (fs.existsSync(rutaVieja)) {
+      fs.renameSync(rutaVieja, rutaNueva);
+      console.log(`✔ ${viejo} → ${nuevo}`);
+    } else {
+      console.log(`✘ No encontrado: ${viejo} en ${carpeta}`);
+    }
+  }
+}
+
+carpetas.forEach(renombrar);
