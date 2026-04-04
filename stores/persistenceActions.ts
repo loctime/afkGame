@@ -60,7 +60,7 @@ export const createPersistenceActions = (set: any, get: () => GameStore) => ({
       
       get().gainXp(xpGained);
       
-      if (IS_DEV) console.log(`Offline Rewards: ${xpGained} XP, ${goldGained} Gold`);
+      get().setOfflineRewards({ xp: xpGained, gold: goldGained });
     }
   },
 });

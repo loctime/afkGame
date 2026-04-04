@@ -76,4 +76,6 @@ export const createGameStateActions = (set: any) => ({
       enemies: state.renderState.enemies.filter((e) => e.id !== enemyId),
     },
   })),
+
+  setOfflineRewards: (rewards: { xp: number; gold: number } | null) => set({ offlineRewards: rewards }),
 });

@@ -17,7 +17,7 @@ const AFKRPGGame: React.FC = () => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const engineRef = React.useRef<GameEngine | null>(null);
   const gameStore = useGameStore();
-  const { gameState } = useGameStore();
+  const { gameState, offlineRewards, setOfflineRewards } = useGameStore();
 
   useEffect(() => {
     // Load saved game on mount
@@ -183,6 +183,26 @@ const AFKRPGGame: React.FC = () => {
             </div>
           )}
           {activeTab === 'settings' && <SettingsPanel />}
+        </div>
+      )}
+
+      {/* Offline rewards modal */}
+      {offlineRewards && (
+        <div className="absolute inset-0 flex items-center justify-center z-40 bg-black/60">
+          <div className="bg-gray-900 border-2 border-yellow-500 rounded-xl p-6 max-w-sm w-full mx-4 text-center shadow-2xl">
+            <div className="text-4xl mb-3">🌙</div>
+            <h2 className="text-yellow-400 font-bold text-xl mb-4">¡Recompensas Offline!</h2>
+            <div className="space-y-2 mb-6">
+              <p className="text-yellow-300 text-2xl font-bold">+{offlineRewards.xp} XP</p>
+              <p className="text-yellow-500 text-2xl font-bold">+{offlineRewards.gold} 🪙</p>
+            </div>
+            <button
+              onClick={() => setOfflineRewards(null)}
+              className="w-full py-3 bg-yellow-600 active:bg-yellow-800 text-white font-bold text-lg rounded-lg transition-colors"
+            >
+              ¡Genial!
+            </button>
+          </div>
         </div>
       )}
 

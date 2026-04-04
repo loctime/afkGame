@@ -43,4 +43,8 @@ export interface GameStore {
   saveGame: () => Promise<void>;
   loadGame: () => Promise<void>;
   calculateOfflineRewards: () => void;
+
+  // Offline rewards
+  offlineRewards: { xp: number; gold: number } | null;
+  setOfflineRewards: (rewards: { xp: number; gold: number } | null) => void;
 }
