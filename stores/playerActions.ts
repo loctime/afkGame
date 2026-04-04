@@ -9,24 +9,28 @@ export const createPlayerActions = (set: any, get: () => GameStore) => ({
     }
   })),
   
-  levelUp: () => set((state: GameStore) => {
-    const newLevel = state.player.level + 1;
-    const newMaxHp = 100 + (newLevel * 10);
-    const newMaxMp = 50 + (newLevel * 5);
-    return {
-      player: {
-        ...state.player,
-        level: newLevel,
-        xp: 0,
-        xpToNext: newLevel * 100,
-        maxHp: newMaxHp,
-        hp: newMaxHp,
-        maxMp: newMaxMp,
-        mp: newMaxMp,
-        unallocatedPoints: state.player.unallocatedPoints + 5,
-      }
-    };
-  }),
+  levelUp: () => {
+    set((state: GameStore) => {
+      const newLevel = state.player.level + 1;
+      const newMaxHp = 100 + (newLevel * 10);
+      const newMaxMp = 50 + (newLevel * 5);
+      return {
+        player: {
+          ...state.player,
+          level: newLevel,
+          xp: 0,
+          xpToNext: newLevel * 100,
+          maxHp: newMaxHp,
+          hp: newMaxHp,
+          maxMp: newMaxMp,
+          mp: newMaxMp,
+          unallocatedPoints: state.player.unallocatedPoints + 5,
+        }
+      };
+    });
+    get().setShowLevelUp(true);
+    setTimeout(() => get().setShowLevelUp(false), 2500);
+  },
   
   gainXp: (amount: number) => set((state: GameStore) => {
     const newXp = state.player.xp + amount;

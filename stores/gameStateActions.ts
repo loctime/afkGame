@@ -78,4 +78,6 @@ export const createGameStateActions = (set: any) => ({
   })),
 
   setOfflineRewards: (rewards: { xp: number; gold: number } | null) => set({ offlineRewards: rewards }),
+
+  setShowLevelUp: (value: boolean) => set({ showLevelUp: value }),
 });

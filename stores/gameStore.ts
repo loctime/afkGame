@@ -29,6 +29,7 @@ export const useGameStore = create<GameStore>()(
       equipment: initialEquipment,
       skills: initialSkills,
       offlineRewards: null,
+      showLevelUp: false,
       
       // Actions
       ...createPlayerActions(set, get),

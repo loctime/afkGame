@@ -47,4 +47,8 @@ export interface GameStore {
   // Offline rewards
   offlineRewards: { xp: number; gold: number } | null;
   setOfflineRewards: (rewards: { xp: number; gold: number } | null) => void;
+
+  // Level up notification
+  showLevelUp: boolean;
+  setShowLevelUp: (value: boolean) => void;
 }

@@ -17,7 +17,7 @@ const AFKRPGGame: React.FC = () => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const engineRef = React.useRef<GameEngine | null>(null);
   const gameStore = useGameStore();
-  const { gameState, offlineRewards, setOfflineRewards } = useGameStore();
+  const { gameState, offlineRewards, setOfflineRewards, showLevelUp, player } = useGameStore();
 
   useEffect(() => {
     // Load saved game on mount
@@ -183,6 +183,19 @@ const AFKRPGGame: React.FC = () => {
             </div>
           )}
           {activeTab === 'settings' && <SettingsPanel />}
+        </div>
+      )}
+
+      {/* Level up notification */}
+      {showLevelUp && (
+        <div
+          className="absolute left-0 right-0 z-25 flex justify-center pointer-events-none"
+          style={{ top: '30%' }}
+        >
+          <div className="text-center animate-bounce">
+            <p className="text-yellow-400 font-bold text-3xl drop-shadow-lg">⭐ LEVEL UP! ⭐</p>
+            <p className="text-white font-semibold text-lg mt-1">Nivel {player.level}</p>
+          </div>
         </div>
       )}
 
