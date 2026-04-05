@@ -170,8 +170,11 @@ const AFKRPGGame: React.FC = () => {
                 {enemy.statusEffect === 'poison' ? '☠️ ' : enemy.statusEffect === 'reflect' ? '🔄 ' : enemy.statusEffect === 'taunt' ? '⚔️ ' : ''}
                 {enemy.name.length > 14 ? enemy.name.slice(0, 14) + '…' : enemy.name}
               </div>
-              <div className="rounded-full overflow-hidden" style={{ width: 64, height: 5, background: 'rgba(0,0,0,0.6)' }}>
+              <div className="relative rounded-full overflow-hidden" style={{ width: 72, height: 12, background: 'rgba(0,0,0,0.6)' }}>
                 <div style={{ width: `${hpPct}%`, height: '100%', background: barColor, transition: 'width 0.2s' }} />
+                <span className="absolute inset-0 flex items-center justify-center text-white font-bold" style={{ fontSize: '8px', textShadow: '0 1px 2px black' }}>
+                  {Math.floor(enemy.hp)}/{enemy.maxHp}
+                </span>
               </div>
             </div>
           );
