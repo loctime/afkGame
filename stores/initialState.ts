@@ -23,6 +23,7 @@ export const initialGameState: GameState = {
   lastPlayTime: Date.now(),
   totalPlayTime: 0,
   currentBackground: 1,
+  activeStatusEffects: [],
 };
 
 export const initialRenderState: RenderState = {

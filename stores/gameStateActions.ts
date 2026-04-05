@@ -80,4 +80,20 @@ export const createGameStateActions = (set: any) => ({
   setOfflineRewards: (rewards: { xp: number; gold: number } | null) => set({ offlineRewards: rewards }),
 
   setShowLevelUp: (value: boolean) => set({ showLevelUp: value }),
+
+  addStatusEffect: (effect: 'poison' | 'taunt') => set((state: GameStore) => ({
+    gameState: {
+      ...state.gameState,
+      activeStatusEffects: state.gameState.activeStatusEffects.includes(effect) 
+        ? state.gameState.activeStatusEffects 
+        : [...state.gameState.activeStatusEffects, effect],
+    }
+  })),
+
+  removeStatusEffect: (effect: 'poison' | 'taunt') => set((state: GameStore) => ({
+    gameState: {
+      ...state.gameState,
+      activeStatusEffects: state.gameState.activeStatusEffects.filter(e => e !== effect),
+    }
+  })),
 });

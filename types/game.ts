@@ -61,6 +61,7 @@ export interface GameState {
   lastPlayTime: number;
   totalPlayTime: number;
   currentBackground: number; // 1-4 para los diferentes fondos
+  activeStatusEffects: Array<'poison' | 'taunt'>;
 }
 
 export interface RenderState {

@@ -19,7 +19,6 @@ export class CombatManager {
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
   private postBossTimeout: ReturnType<typeof setTimeout> | null = null;
-  private poisoned = false;
 
   constructor(
     getStore: () => GameStore,
@@ -60,6 +59,15 @@ export class CombatManager {
       const tauntedEnemy = enemies.find(e => e.statusEffect === 'taunt');
       if (tauntedEnemy) {
         enemy = tauntedEnemy;
+        // Add taunt status effect if not already active
+        if (!this.getStore().gameState.activeStatusEffects.includes('taunt')) {
+          this.getStore().addStatusEffect('taunt');
+        }
+      } else {
+        // Remove taunt status effect if no taunted enemies
+        if (this.getStore().gameState.activeStatusEffects.includes('taunt')) {
+          this.getStore().removeStatusEffect('taunt');
+        }
       }
 
       // Intentar usar skills automáticamente
@@ -98,21 +106,25 @@ export class CombatManager {
         const mitigated = Math.max(1, enemy.damage - Math.floor(defStats.vit * 0.5));
         
         // Poison logic: 40% chance for ranged enemies to apply poison
-        if (enemy.statusEffect === 'poison' && Math.random() < 0.4 && !this.poisoned) {
-          this.poisoned = true;
-          let poisonTicks = 0;
-          
-          const applyPoison = () => {
-            if (poisonTicks < 3) {
-              this.getStore().takeDamage(5);
-              poisonTicks++;
-              setTimeout(applyPoison, 2000);
-            } else {
-              this.poisoned = false;
-            }
-          };
-          
-          setTimeout(applyPoison, 2000);
+        if (enemy.statusEffect === 'poison' && Math.random() < 0.4) {
+          // Check if poison is already active
+          const currentEffects = this.getStore().gameState.activeStatusEffects;
+          if (!currentEffects.includes('poison')) {
+            this.getStore().addStatusEffect('poison');
+            let poisonTicks = 0;
+            
+            const applyPoison = () => {
+              if (poisonTicks < 3) {
+                this.getStore().takeDamage(5);
+                poisonTicks++;
+                setTimeout(applyPoison, 2000);
+              } else {
+                this.getStore().removeStatusEffect('poison');
+              }
+            };
+            
+            setTimeout(applyPoison, 2000);
+          }
         }
         
         this.getStore().takeDamage(mitigated);

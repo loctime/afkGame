@@ -11,6 +11,10 @@ export const GameHUD: React.FC = () => {
   const xpPercentage = (player.xp / player.xpToNext) * 100;
   const isLowHp = hpPercentage < 30;
 
+  // Status effect indicators
+  const hasPoison = gameState.activeStatusEffects.includes('poison');
+  const hasTaunt = gameState.activeStatusEffects.includes('taunt');
+
   return (
     <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm z-50"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
@@ -63,6 +67,20 @@ export const GameHUD: React.FC = () => {
               {Math.floor(player.xp)}/{player.xpToNext}
             </span>
           </div>
+        </div>
+
+        {/* Status Effects */}
+        <div className="flex gap-1 mt-1">
+          {hasPoison && (
+            <div className="px-2 py-1 bg-green-800/80 border border-green-600 rounded text-xs text-green-300 font-semibold animate-pulse">
+              ☠️ Veneno
+            </div>
+          )}
+          {hasTaunt && (
+            <div className="px-2 py-1 bg-red-800/80 border border-red-600 rounded text-xs text-red-300 font-semibold animate-pulse">
+              ⚔️ Provocado
+            </div>
+          )}
         </div>
 
         {/* Center Info */}
