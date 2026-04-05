@@ -192,6 +192,11 @@ export class CombatManager {
           this.getStore().takeDamage(reflectDamage);
         }
         
+        if (this.getStore().player.hp <= 0) {
+          this.gameOver();
+          return false;
+        }
+        
         if (enemyPos) {
           this.playerManager.faceTarget(enemyPos.x);
           if (attackSkill.id === 'fire_ball') {
@@ -248,6 +253,11 @@ export class CombatManager {
         if (enemy.statusEffect === 'reflect') {
           const reflectDamage = Math.floor(damageAmount * 0.2);
           this.getStore().takeDamage(reflectDamage);
+        }
+        
+        if (this.getStore().player.hp <= 0) {
+          this.gameOver();
+          return;
         }
         
         const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
