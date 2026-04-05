@@ -162,8 +162,9 @@
 
   .wave-row {
     display: flex;
-    gap: 6px;
-    align-items: center;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
   }
 
   .wave-row label {
@@ -172,9 +173,36 @@
     white-space: nowrap;
   }
 
-  .wave-row input[type=number] {
-    width: 56px;
-    text-align: center;
+  .wave-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+
+  .wave-btn {
+    font-size: 0.6rem;
+    padding: 3px 4px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .wave-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent2);
+  }
+
+  .wave-btn.active {
+    background: var(--accent);
+    color: #0a0a0f;
+    border-color: var(--accent);
   }
 
   .behavior-badge {
@@ -188,6 +216,41 @@
   .badge-ranged { background: rgba(80,200,246,0.2); color: #80d8f8; border: 1px solid rgba(80,200,246,0.3); }
   .badge-tank { background: rgba(123,79,240,0.2); color: #b09af0; border: 1px solid rgba(123,79,240,0.3); }
   .badge-aggressive { background: rgba(232,160,48,0.2); color: var(--accent); border: 1px solid rgba(232,160,48,0.3); }
+
+  .behavior-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .behavior-btn {
+    font-size: 0.65rem;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .behavior-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .behavior-btn.active {
+    color: #0a0a0f;
+    border-color: transparent;
+  }
+
+  .behavior-btn.active.btn-melee { background: rgba(224,80,80,0.8); }
+  .behavior-btn.active.btn-aggressive { background: rgba(232,160,48,0.8); }
+  .behavior-btn.active.btn-ranged { background: rgba(80,200,246,0.8); }
+  .behavior-btn.active.btn-tank { background: rgba(123,79,240,0.8); }
 
   .toolbar {
     display: flex;
@@ -318,7 +381,7 @@
     <p>Asigná nombre, clase y wave a cada criatura. Luego exportá el código listo para el juego.</p>
   </header>
 
-  <div class="progress-text" id="progressText">0 / 20 completados</div>
+  <div class="progress-text" id="progressText">0 / 47 completados</div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
   <div class="toolbar">
@@ -339,59 +402,96 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const ICONS = [13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32];
+// Lista de todos los iconos disponibles (se generará dinámicamente)
+let ICONS = [];
 
-const SUGGESTIONS = {
-  13: { name: 'Blue Wisp',     behavior: 'ranged',     wave: 1  },
-  14: { name: 'Spider Fiend',  behavior: 'aggressive', wave: 1  },
-  15: { name: 'Pumpkin Shade', behavior: 'melee',      wave: 2  },
-  16: { name: 'Sun Crawler',   behavior: 'melee',      wave: 3  },
-  17: { name: 'Spriggon',      behavior: 'aggressive', wave: 4  },
-  18: { name: 'Swamp Warden',  behavior: 'tank',       wave: 5  },
-  19: { name: 'Frost Wisp',    behavior: 'ranged',     wave: 6  },
-  20: { name: 'Rose Wight',    behavior: 'ranged',     wave: 7  },
-  21: { name: 'Slime Spawn',   behavior: 'melee',      wave: 1  },
-  22: { name: 'Bog Creeper',   behavior: 'tank',       wave: 8  },
-  23: { name: 'Crystal Golem', behavior: 'tank',       wave: 10 },
-  24: { name: 'Toxic Blob',    behavior: 'melee',      wave: 3  },
-  25: { name: 'Cryo Wraith',   behavior: 'ranged',     wave: 12 },
-  26: { name: 'Bell Goblin',   behavior: 'aggressive', wave: 5  },
-  27: { name: 'Stone Imp',     behavior: 'melee',      wave: 6  },
-  28: { name: 'Moss Hulk',     behavior: 'tank',       wave: 9  },
-  29: { name: 'Plague Mass',   behavior: 'aggressive', wave: 11 },
-  30: { name: 'Vine Horror',   behavior: 'melee',      wave: 8  },
-  31: { name: 'Shadow Bear',   behavior: 'tank',       wave: 14 },
-  32: { name: 'Void Moth',     behavior: 'ranged',     wave: 16 },
-};
+// Lista de todos los archivos PNG disponibles en Background
+const ALL_MONSTER_FILES = [
+  'Abeja de Barrio.png',
+  'Alien de Heladera.png',
+  'Aracnida de Lujo.png',
+  'Araña Pyromaniaca.png',
+  'Bicho del Bajo Presupuesto.png',
+  'Brocoli del Mal.png',
+  'Bugs Bunny Loco.png',
+  'Cabezón Psicópata.png',
+  'Calabacita Rabiossa.png',
+  'Canguro Depresivo.png',
+  'Cerberito de Patio.png',
+  'Cucaracha Premium.png',
+  'Culebra con Hambre Existencial.png',
+  'Demonio Low Cost.png',
+  'Dentón Incomible.png',
+  'Diablillo Burnout.png',
+  'Dracofóbico.png',
+  'El Calvito Venennus.png',
+  'Enanito del Bosque Sangriento.png',
+  'Escorpio Express.png',
+  'Fantasma de tu Ex.png',
+  'Florcita Depresiva Power.png',
+  'Fénix de Descuento.png',
+  'Gato Pirata del Inframundo.png',
+  'Gelatina con Ansiedad.png',
+  'Gelatinoso Depresivo.png',
+  'Ghost Rider de Barrio.png',
+  'Honguito Le Suicide.png',
+  'Honguito Vagabundo.png',
+  'Jack el Resacoso.png',
+  'Kraken de Tierra.png',
+  'Mandarina del Mal.png',
+  'Margarita del Inframundo.png',
+  'Mineral Alucinante.png',
+  'Murciélago Emo.png',
+  'Osito Hongocida.png',
+  'Peludo del Subsuelo.png',
+  'Petunia Poseída.png',
+  'Pollo Resucitado.png',
+  'Pumpkin-chan Poseido.png',
+  'Pájaro Traumado.png',
+  'Seta con Trauma.png',
+  'Slime Tragón.png',
+  'Slime con Sombrero.png',
+  'Tanque con Ansiedad.png',
+  'Tentaculín el Sensible.png',
+  'Viejo Trippy.png',
+  'Yeti de Heladera.png'
+];
 
-const ICON_DATA = {
-  13: '../assets/sprites/monsters/PNG/Background/Petunia Poseída.png',
-  14: '../assets/sprites/monsters/PNG/Background/Araña Pyromaniaca.png',
-  15: '../assets/sprites/monsters/PNG/Background/Pumpkin-chan Poseido.png',
-  16: '../assets/sprites/monsters/PNG/Background/El Calvito Venennus.png',
-  17: '../assets/sprites/monsters/PNG/Background/Brocoli del Mal.png',
-  18: '../assets/sprites/monsters/PNG/Background/Margarita del Inframundo.png',
-  19: '../assets/sprites/monsters/PNG/Background/Florcita Depresiva Power.png',
-  20: '../assets/sprites/monsters/PNG/Background/Tentaculín el Sensible.png',
-  21: '../assets/sprites/monsters/PNG/Background/Ghost Rider de Barrio.png',
-  22: '../assets/sprites/monsters/PNG/Background/Fantasma de tu Ex.png',
-  23: '../assets/sprites/monsters/PNG/Background/Mineral Alucinante.png',
-  24: '../assets/sprites/monsters/PNG/Background/Slime con Sombrero.png',
-  25: '../assets/sprites/monsters/PNG/Background/Yeti de Heladera.png',
-  26: '../assets/sprites/monsters/PNG/Background/Alien de Heladera.png',
-  27: '../assets/sprites/monsters/PNG/Background/Cabezón Psicópata.png',
-  28: '../assets/sprites/monsters/PNG/Background/Slime Tragón.png',
-  29: '../assets/sprites/monsters/PNG/Background/Gelatinoso Depresivo.png',
-  30: '../assets/sprites/monsters/PNG/Background/Gelatina con Ansiedad.png',
-  31: '../assets/sprites/monsters/PNG/Background/Peludo del Subsuelo.png',
-  32: '../assets/sprites/monsters/PNG/Background/Dracofóbico.png'
-};
+// Generar sugerencias dinámicamente usando los nombres de archivo
+function generateSuggestions() {
+  const behaviors = ['melee', 'aggressive', 'ranged', 'tank'];
+  return ALL_MONSTER_FILES.reduce((acc, filename, index) => {
+    const iconNumber = index + 1;
+    const name = filename.replace('.png', ''); // Quitar la extensión
+    const behavior = behaviors[index % behaviors.length]; // Rotar comportamientos
+    const wave = Math.floor(index / 4) + 1; // Agrupar por waves
+    acc[iconNumber] = { name, behavior, wave };
+    return acc;
+  }, {});
+}
+
+const SUGGESTIONS = generateSuggestions();
+
+// Generar ICONS y ICON_DATA dinámicamente
+function initializeIcons() {
+  ICONS = ALL_MONSTER_FILES.map((_, index) => index + 1);
+  return ICONS.reduce((acc, iconIndex, index) => {
+    acc[iconIndex] = `../assets/sprites/monsters/PNG/Background/${ALL_MONSTER_FILES[index]}`;
+    return acc;
+  }, {});
+}
+
+const ICON_DATA = initializeIcons();
 
 // Load from localStorage if available
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem('monster_catalog') || '{}'); } catch(e) {}
 
 function getVal(icon, field) {
+  if (field === 'name' && !saved[`Icon${icon}`]?.[field]) {
+    // Si no hay valor guardado, mostrar el nombre del archivo por defecto
+    return ALL_MONSTER_FILES[icon - 1]?.replace('.png', '') || '';
+  }
   return saved[`Icon${icon}`]?.[field] || '';
 }
 
@@ -399,7 +499,6 @@ function buildGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
   ICONS.forEach(i => {
-    const key = `Icon${i}`;
     const s = SUGGESTIONS[i];
     const isDone = getVal(i, 'name') && getVal(i, 'behavior') && getVal(i, 'wave');
     const card = document.createElement('div');
@@ -407,21 +506,27 @@ function buildGrid() {
     card.id = `card-${i}`;
     card.innerHTML = `
       <div class="sprite-box">
-        <img src="${ICON_DATA[key]}" alt="Icon${i}" />
+        <img src="${ICON_DATA[i]}" alt="Icon${i}" />
       </div>
       <div class="icon-label">ICON ${i}</div>
       <div class="fields">
         <input type="text" id="name-${i}" placeholder="Nombre..." value="${getVal(i,'name')}" oninput="save(${i})" />
-        <select id="behavior-${i}" onchange="save(${i})">
-          <option value="">— Clase —</option>
-          <option value="melee" ${getVal(i,'behavior')==='melee'?'selected':''}>⚔️ Melee</option>
-          <option value="aggressive" ${getVal(i,'behavior')==='aggressive'?'selected':''}>🔥 Aggressive</option>
-          <option value="ranged" ${getVal(i,'behavior')==='ranged'?'selected':''}>🏹 Ranged</option>
-          <option value="tank" ${getVal(i,'behavior')==='tank'?'selected':''}>🛡️ Tank</option>
-        </select>
+        <div class="behavior-buttons">
+          <button type="button" class="behavior-btn btn-melee ${getVal(i,'behavior')==='melee'?'active':''}" onclick="setBehavior(${i}, 'melee')">⚔️ Melee</button>
+          <button type="button" class="behavior-btn btn-aggressive ${getVal(i,'behavior')==='aggressive'?'active':''}" onclick="setBehavior(${i}, 'aggressive')">🔥 Aggressive</button>
+          <button type="button" class="behavior-btn btn-ranged ${getVal(i,'behavior')==='ranged'?'active':''}" onclick="setBehavior(${i}, 'ranged')">🏹 Ranged</button>
+          <button type="button" class="behavior-btn btn-tank ${getVal(i,'behavior')==='tank'?'active':''}" onclick="setBehavior(${i}, 'tank')">🛡️ Tank</button>
+        </div>
         <div class="wave-row">
           <label>Wave mín.</label>
-          <input type="number" id="wave-${i}" min="1" max="100" value="${getVal(i,'wave')}" oninput="save(${i})" />
+          <div class="wave-buttons">
+            <button type="button" class="wave-btn ${getVal(i,'wave')<=10?'active':''}" onclick="setWave(${i}, 10)">&lt;10</button>
+            <button type="button" class="wave-btn ${getVal(i,'wave')>10 && getVal(i,'wave')<=20?'active':''}" onclick="setWave(${i}, 20)">&gt;10</button>
+            <button type="button" class="wave-btn ${getVal(i,'wave')>20 && getVal(i,'wave')<=30?'active':''}" onclick="setWave(${i}, 30)">&gt;20</button>
+            <button type="button" class="wave-btn ${getVal(i,'wave')>30 && getVal(i,'wave')<=40?'active':''}" onclick="setWave(${i}, 40)">&gt;30</button>
+            <button type="button" class="wave-btn ${getVal(i,'wave')>40 && getVal(i,'wave')<=50?'active':''}" onclick="setWave(${i}, 50)">&gt;40</button>
+            <button type="button" class="wave-btn ${getVal(i,'wave')>50?'active':''}" onclick="setWave(${i}, 60)">&gt;50</button>
+          </div>
         </div>
       </div>
     `;
@@ -430,10 +535,37 @@ function buildGrid() {
   updateProgress();
 }
 
+function setBehavior(i, behavior) {
+  // Actualizar botones
+  const buttons = document.querySelectorAll(`#card-${i} .behavior-btn`);
+  buttons.forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`#card-${i} .btn-${behavior}`).classList.add('active');
+  
+  // Guardar
+  if (!saved[`Icon${i}`]) saved[`Icon${i}`] = {};
+  saved[`Icon${i}`].behavior = behavior;
+  try { localStorage.setItem('monster_catalog', JSON.stringify(saved)); } catch(e) {}
+  updateProgress();
+}
+
+function setWave(i, maxWave) {
+  // Actualizar botones
+  const buttons = document.querySelectorAll(`#card-${i} .wave-btn`);
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Guardar
+  if (!saved[`Icon${i}`]) saved[`Icon${i}`] = {};
+  saved[`Icon${i}`].wave = maxWave;
+  try { localStorage.setItem('monster_catalog', JSON.stringify(saved)); } catch(e) {}
+  updateProgress();
+}
+
 function save(i) {
   const name = document.getElementById(`name-${i}`).value.trim();
-  const behavior = document.getElementById(`behavior-${i}`).value;
-  const wave = parseInt(document.getElementById(`wave-${i}`).value) || 1;
+  const behavior = saved[`Icon${i}`]?.behavior || '';
+  const wave = saved[`Icon${i}`]?.wave || 1;
+  
   saved[`Icon${i}`] = { name, behavior, wave };
   try { localStorage.setItem('monster_catalog', JSON.stringify(saved)); } catch(e) {}
   const isDone = name && behavior && wave;
@@ -453,16 +585,21 @@ function updateProgress() {
 function autofill() {
   ICONS.forEach(i => {
     const s = SUGGESTIONS[i];
-    if (!getVal(i, 'name')) {
-      if (!saved[`Icon${i}`]) saved[`Icon${i}`] = {};
-      saved[`Icon${i}`].name = s.name;
+    if (!saved[`Icon${i}`]) saved[`Icon${i}`] = {};
+    
+    // Solo establecer comportamiento y wave si no existen
+    if (!saved[`Icon${i}`].behavior) {
       saved[`Icon${i}`].behavior = s.behavior;
+    }
+    if (!saved[`Icon${i}`].wave) {
       saved[`Icon${i}`].wave = s.wave;
     }
+    
+    // NO cambiar el nombre - mantener el existente o el del archivo
   });
   try { localStorage.setItem('monster_catalog', JSON.stringify(saved)); } catch(e) {}
   buildGrid();
-  toast('✨ Sugerencias aplicadas');
+  toast('✨ Clases y waves aplicadas');
 }
 
 function clearAll() {
