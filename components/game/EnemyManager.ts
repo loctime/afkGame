@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { EnemyData } from '../../types/game';
+import { MONSTER_CATALOG } from '../../core/balance/game-config';
 
 const MAX_ENEMY_SIZE = 64;
 const IS_DEV = process.env.NODE_ENV === 'development';
@@ -17,8 +18,9 @@ export class EnemyManager {
   }
 
   public createEnemy(enemy: EnemyData): PIXI.AnimatedSprite {
-    // Seleccionar un monstruo aleatorio basado en el nivel
-    const monsterIndex = this.getMonsterIndexForWave(enemy.level);
+    // Get iconIndex from the selected monster based on enemy name
+    const monster = Object.values(MONSTER_CATALOG).find(m => m.name === enemy.name);
+    const monsterIndex = monster ? monster.iconIndex : this.getMonsterIndexForWave(enemy.level);
     
     try {
       // Crear animación del monstruo
@@ -49,10 +51,6 @@ export class EnemyManager {
       const baseTex = animatedSprite.texture.baseTexture;
       if (baseTex.valid) {
         applyEnemyScaleFromTexture();
-      } else {
-        baseTex.on('loaded', () => {
-          applyEnemyScaleFromTexture();
-        });
       }
 
       // Configurar animación más rápida para que sea visible
@@ -198,26 +196,35 @@ export class EnemyManager {
   }
 
   private getMonsterIndexForWave(wave: number): number {
-    // Seleccionar monstruo basado en el nivel
-    if (wave <= 5) {
-      // Niveles 1-5: Monstruos básicos (1-10)
+    // Filter monsters by minWave <= wave and choose one randomly
+    const availableMonsters = Object.values(MONSTER_CATALOG).filter(
+      monster => monster.minWave <= wave
+    );
+    
+    if (availableMonsters.length === 0) {
+      // Fallback to basic monsters if none available
       return Math.floor(Math.random() * 10) + 1;
-    } else if (wave <= 15) {
-      // Niveles 6-15: Monstruos intermedios (11-25)
-      return Math.floor(Math.random() * 15) + 11;
-    } else if (wave <= 30) {
-      // Niveles 16-30: Monstruos avanzados (26-40)
-      return Math.floor(Math.random() * 15) + 26;
-    } else {
-      // Niveles 31+: Monstruos élite (41-50)
-      return Math.floor(Math.random() * 10) + 41;
     }
+    
+    const selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+    return selectedMonster.iconIndex;
   }
 
   private getEnemyBehavior(wave: number): 'melee' | 'ranged' | 'tank' | 'aggressive' {
-    const behaviors = ['melee', 'ranged', 'tank', 'aggressive'];
-    const behaviorIndex = Math.floor(Math.random() * behaviors.length);
-    return behaviors[behaviorIndex] as 'melee' | 'ranged' | 'tank' | 'aggressive';
+    // Filter monsters by minWave <= wave and choose one randomly
+    const availableMonsters = Object.values(MONSTER_CATALOG).filter(
+      monster => monster.minWave <= wave
+    );
+    
+    if (availableMonsters.length === 0) {
+      // Fallback to random behavior if none available
+      const behaviors = ['melee', 'ranged', 'tank', 'aggressive'];
+      const behaviorIndex = Math.floor(Math.random() * behaviors.length);
+      return behaviors[behaviorIndex] as 'melee' | 'ranged' | 'tank' | 'aggressive';
+    }
+    
+    const selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+    return selectedMonster.behavior;
   }
 
   private getEnemySpeed(behavior: string, level: number): number {
@@ -251,30 +258,23 @@ export class EnemyManager {
   }
 
   private getEnemyName(wave: number): string {
-    const enemyTypes = [
-      // Niveles 1-5: Criaturas básicas
-      'Slime', 'Goblin', 'Orc', 'Skeleton', 'Zombie',
-      // Niveles 6-15: Criaturas intermedias
-      'Troll', 'Ogre', 'Demon', 'Vampire', 'Werewolf',
-      // Niveles 16-30: Criaturas avanzadas
-      'Dragon', 'Giant', 'Witch', 'Necromancer', 'Dark Knight',
-      // Niveles 31+: Criaturas élite
-      'Ancient Dragon', 'Demon Lord', 'Dark God', 'Chaos Beast', 'Void Creature'
-    ];
+    // Filter monsters by minWave <= wave and choose one randomly
+    const availableMonsters = Object.values(MONSTER_CATALOG).filter(
+      monster => monster.minWave <= wave
+    );
     
-    const typeIndex = Math.min(Math.floor(wave / 5), enemyTypes.length - 1);
-    const enemyType = enemyTypes[typeIndex];
-    
-    // Agregar sufijos según el nivel
-    if (wave > 30) {
-      return `${enemyType} Lord Lv.${wave}`;
-    } else if (wave > 20) {
-      return `${enemyType} Elite Lv.${wave}`;
-    } else if (wave > 10) {
-      return `${enemyType} Warrior Lv.${wave}`;
-    } else {
+    if (availableMonsters.length === 0) {
+      // Fallback to generic names if none available
+      const enemyTypes = [
+        'Slime', 'Goblin', 'Orc', 'Skeleton', 'Zombie',
+        'Troll', 'Ogre', 'Demon', 'Vampire', 'Werewolf'
+      ];
+      const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
       return `${enemyType} Lv.${wave}`;
     }
+    
+    const selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+    return selectedMonster.name;
   }
 
   public spawnEnemiesForWave(wave: number): EnemyData[] {
@@ -287,14 +287,32 @@ export class EnemyManager {
       const x = this.app.screen.width / 2 + Math.cos(angle) * distance;
       const y = this.app.screen.height / 2 + Math.sin(angle) * distance;
 
-      const behavior = this.getEnemyBehavior(wave);
+      // Choose one monster consistently for this enemy
+      const availableMonsters = Object.values(MONSTER_CATALOG).filter(
+        monster => monster.minWave <= wave
+      );
+      
+      let selectedMonster;
+      if (availableMonsters.length === 0) {
+        // Fallback to basic monster
+        selectedMonster = {
+          iconIndex: Math.floor(Math.random() * 10) + 1,
+          name: `Basic Monster Lv.${wave}`,
+          behavior: ['melee', 'ranged', 'tank', 'aggressive'][Math.floor(Math.random() * 4)] as 'melee' | 'ranged' | 'tank' | 'aggressive',
+          minWave: 1
+        };
+      } else {
+        selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+      }
+
+      const behavior = selectedMonster.behavior;
       const speed = this.getEnemySpeed(behavior, wave);
       const preferredDistance = this.getPreferredDistance(behavior);
 
       // Pure data — no PIXI references
       const enemyData: EnemyData = {
         id: `enemy_${wave}_${i}`,
-        name: this.getEnemyName(wave),
+        name: selectedMonster.name,
         level: wave,
         hp: 50 + (wave * 10),
         maxHp: 50 + (wave * 10),

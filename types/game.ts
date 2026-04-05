@@ -105,3 +105,10 @@ export interface Equipment {
   artifact1?: Item;     // artefacto runico
   artifact2?: Item;     // artefacto runico
 }
+
+export interface MonsterDefinition {
+  iconIndex: number;
+  name: string;
+  behavior: 'melee' | 'aggressive' | 'ranged' | 'tank';
+  minWave: number;
+}

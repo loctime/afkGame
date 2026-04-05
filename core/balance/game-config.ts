@@ -1,4 +1,6 @@
 // Configuración de balance del juego
+import { MonsterDefinition } from '../../types/game';
+
 export const GAME_CONFIG = {
   // Configuración de combate
   COMBAT: {
@@ -116,5 +118,296 @@ export const ITEM_RARITIES = {
     color: '#f59e0b',
     dropRate: 0.02,
     statMultiplier: 3,
+  },
+};
+
+export const MONSTER_CATALOG: Record<string, MonsterDefinition> = {
+  Icon1: {
+    iconIndex: 1,
+    name: 'Abeja de Barrio',
+    behavior: 'ranged',
+    minWave: 1,
+  },
+  Icon2: {
+    iconIndex: 2,
+    name: 'Alien de Heladera',
+    behavior: 'tank',
+    minWave: 1,
+  },
+  Icon3: {
+    iconIndex: 3,
+    name: 'Aracnida de Lujo',
+    behavior: 'aggressive',
+    minWave: 20,
+  },
+  Icon4: {
+    iconIndex: 4,
+    name: 'Araña Pyromaniaca',
+    behavior: 'aggressive',
+    minWave: 20,
+  },
+  Icon5: {
+    iconIndex: 5,
+    name: 'Bicho del Bajo Presupuesto',
+    behavior: 'melee',
+    minWave: 20,
+  },
+  Icon6: {
+    iconIndex: 6,
+    name: 'Brocoli del Mal',
+    behavior: 'aggressive',
+    minWave: 30,
+  },
+  Icon7: {
+    iconIndex: 7,
+    name: 'Bugs Bunny Loco',
+    behavior: 'aggressive',
+    minWave: 30,
+  },
+  Icon8: {
+    iconIndex: 8,
+    name: 'Cabezón Psicópata',
+    behavior: 'tank',
+    minWave: 30,
+  },
+  Icon9: {
+    iconIndex: 9,
+    name: 'Calabacita Rabiossa',
+    behavior: 'ranged',
+    minWave: 30,
+  },
+  Icon10: {
+    iconIndex: 10,
+    name: 'Canguro Depresivo',
+    behavior: 'aggressive',
+    minWave: 30,
+  },
+  Icon11: {
+    iconIndex: 11,
+    name: 'Cerberito de Patio',
+    behavior: 'melee',
+    minWave: 30,
+  },
+  Icon12: {
+    iconIndex: 12,
+    name: 'Cucaracha Premium',
+    behavior: 'tank',
+    minWave: 40,
+  },
+  Icon13: {
+    iconIndex: 13,
+    name: 'Culebra con Hambre Existencial',
+    behavior: 'ranged',
+    minWave: 40,
+  },
+  Icon14: {
+    iconIndex: 14,
+    name: 'Demonio Low Cost',
+    behavior: 'tank',
+    minWave: 40,
+  },
+  Icon15: {
+    iconIndex: 15,
+    name: 'Dentón Incomible',
+    behavior: 'aggressive',
+    minWave: 40,
+  },
+  Icon16: {
+    iconIndex: 16,
+    name: 'Diablillo Burnout',
+    behavior: 'ranged',
+    minWave: 40,
+  },
+  Icon17: {
+    iconIndex: 17,
+    name: 'Dracofóbico',
+    behavior: 'aggressive',
+    minWave: 40,
+  },
+  Icon18: {
+    iconIndex: 18,
+    name: 'El Calvito Venennus',
+    behavior: 'tank',
+    minWave: 40,
+  },
+  Icon19: {
+    iconIndex: 19,
+    name: 'Enanito del Bosque Sangriento',
+    behavior: 'ranged',
+    minWave: 50,
+  },
+  Icon20: {
+    iconIndex: 20,
+    name: 'Escorpio Express',
+    behavior: 'aggressive',
+    minWave: 50,
+  },
+  Icon21: {
+    iconIndex: 21,
+    name: 'Fantasma de tu Ex',
+    behavior: 'tank',
+    minWave: 50,
+  },
+  Icon22: {
+    iconIndex: 22,
+    name: 'Florcita Depresiva Power',
+    behavior: 'ranged',
+    minWave: 50,
+  },
+  Icon23: {
+    iconIndex: 23,
+    name: 'Fénix de Descuento',
+    behavior: 'ranged',
+    minWave: 50,
+  },
+  Icon24: {
+    iconIndex: 24,
+    name: 'Gato Pirata del Inframundo',
+    behavior: 'melee',
+    minWave: 50,
+  },
+  Icon25: {
+    iconIndex: 25,
+    name: 'Gelatina con Ansiedad',
+    behavior: 'tank',
+    minWave: 50,
+  },
+  Icon26: {
+    iconIndex: 26,
+    name: 'Gelatinoso Depresivo',
+    behavior: 'aggressive',
+    minWave: 60,
+  },
+  Icon27: {
+    iconIndex: 27,
+    name: 'Ghost Rider de Barrio',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon28: {
+    iconIndex: 28,
+    name: 'Honguito Le Suicide',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon29: {
+    iconIndex: 29,
+    name: 'Honguito Vagabundo',
+    behavior: 'melee',
+    minWave: 60,
+  },
+  Icon30: {
+    iconIndex: 30,
+    name: 'Jack el Resacoso',
+    behavior: 'aggressive',
+    minWave: 60,
+  },
+  Icon31: {
+    iconIndex: 31,
+    name: 'Kraken de Tierra',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon32: {
+    iconIndex: 32,
+    name: 'Mandarina del Mal',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon33: {
+    iconIndex: 33,
+    name: 'Margarita del Inframundo',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon34: {
+    iconIndex: 34,
+    name: 'Mineral Alucinante',
+    behavior: 'aggressive',
+    minWave: 60,
+  },
+  Icon35: {
+    iconIndex: 35,
+    name: 'Murciélago Emo',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon36: {
+    iconIndex: 36,
+    name: 'Osito Hongocida',
+    behavior: 'aggressive',
+    minWave: 60,
+  },
+  Icon37: {
+    iconIndex: 37,
+    name: 'Peludo del Subsuelo',
+    behavior: 'melee',
+    minWave: 60,
+  },
+  Icon38: {
+    iconIndex: 38,
+    name: 'Petunia Poseída',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon39: {
+    iconIndex: 39,
+    name: 'Pollo Resucitado',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon40: {
+    iconIndex: 40,
+    name: 'Pumpkin-chan Poseido',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon41: {
+    iconIndex: 41,
+    name: 'Pájaro Traumado',
+    behavior: 'melee',
+    minWave: 60,
+  },
+  Icon42: {
+    iconIndex: 42,
+    name: 'Seta con Trauma',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon43: {
+    iconIndex: 43,
+    name: 'Slime Tragón',
+    behavior: 'melee',
+    minWave: 60,
+  },
+  Icon44: {
+    iconIndex: 44,
+    name: 'Slime con Sombrero',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon45: {
+    iconIndex: 45,
+    name: 'Tanque con Ansiedad',
+    behavior: 'aggressive',
+    minWave: 60,
+  },
+  Icon46: {
+    iconIndex: 46,
+    name: 'Tentaculín el Sensible',
+    behavior: 'ranged',
+    minWave: 60,
+  },
+  Icon47: {
+    iconIndex: 47,
+    name: 'Viejo Trippy',
+    behavior: 'tank',
+    minWave: 60,
+  },
+  Icon48: {
+    iconIndex: 48,
+    name: 'Yeti de Heladera',
+    behavior: 'tank',
+    minWave: 60,
   },
 };
