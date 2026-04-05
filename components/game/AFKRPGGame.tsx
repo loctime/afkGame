@@ -14,10 +14,11 @@ const AFKRPGGame: React.FC = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [gameEngine, setGameEngine] = useState<GameEngine | null>(null);
   const [isEngineReady, setIsEngineReady] = useState(false);
+  const [enemyPositions, setEnemyPositions] = useState<Array<{id: string, x: number, y: number}>>([]);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const engineRef = React.useRef<GameEngine | null>(null);
   const gameStore = useGameStore();
-  const { gameState, offlineRewards, setOfflineRewards, showLevelUp, player } = useGameStore();
+  const { gameState, renderState, offlineRewards, setOfflineRewards, showLevelUp, player } = useGameStore();
 
   useEffect(() => {
     // Load saved game on mount
@@ -77,6 +78,14 @@ const AFKRPGGame: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!gameEngine) return;
+    const interval = setInterval(() => {
+      setEnemyPositions(gameEngine.getEnemyScreenPositions());
+    }, 100);
+    return () => clearInterval(interval);
+  }, [gameEngine]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -144,6 +153,30 @@ const AFKRPGGame: React.FC = () => {
         } ${isInventoryPanel ? 'sm:left-auto sm:right-0' : ''}`}
         style={{ height: 'calc(100dvh - 108px)' }}
       />
+
+      {/* Enemy HP bars overlay */}
+      <div className="absolute top-12 left-0 pointer-events-none" style={{ height: 'calc(100dvh - 108px)', width: '100%', overflow: 'hidden' }}>
+        {renderState.enemies.map(enemy => {
+          const pos = enemyPositions.find(p => p.id === enemy.id);
+          if (!pos) return null;
+          const hpPct = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
+          const barColor = 
+            enemy.behavior === 'tank' ? '#a855f7' :
+            enemy.behavior === 'aggressive' ? '#f97316' :
+            enemy.behavior === 'ranged' ? '#22c55e' : '#ef4444';
+          return (
+            <div key={enemy.id} className="absolute" style={{ left: pos.x, top: pos.y - 40, transform: 'translateX(-50%)' }}>
+              <div className="text-white text-xs text-center mb-0.5 drop-shadow font-semibold whitespace-nowrap" style={{ fontSize: '10px', textShadow: '0 1px 2px black' }}>
+                {enemy.statusEffect === 'poison' ? '☠️ ' : enemy.statusEffect === 'reflect' ? '🔄 ' : enemy.statusEffect === 'taunt' ? '⚔️ ' : ''}
+                {enemy.name.length > 14 ? enemy.name.slice(0, 14) + '…' : enemy.name}
+              </div>
+              <div className="rounded-full overflow-hidden" style={{ width: 64, height: 5, background: 'rgba(0,0,0,0.6)' }}>
+                <div style={{ width: `${hpPct}%`, height: '100%', background: barColor, transition: 'width 0.2s' }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Loading overlay — visible until PIXI assets finish loading */}
       {!isEngineReady && (

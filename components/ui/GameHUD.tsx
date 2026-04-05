@@ -2,69 +2,6 @@ import React, { useState } from 'react';
 import { Heart, Zap } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 
-// Enemy HP bars component
-const EnemyHPBars: React.FC = () => {
-  const enemies = useGameStore(state => state.renderState.enemies);
-  
-  if (enemies.length === 0) return null;
-  
-  const getBehaviorColor = (behavior?: string) => {
-    switch (behavior) {
-      case 'melee': return 'bg-red-500';
-      case 'aggressive': return 'bg-orange-500';
-      case 'tank': return 'bg-purple-500';
-      case 'ranged': return 'bg-green-500';
-      default: return 'bg-gray-500';
-    }
-  };
-  
-  const getStatusIcon = (statusEffect?: string) => {
-    switch (statusEffect) {
-      case 'poison': return '☠️';
-      case 'reflect': return '🔄';
-      case 'taunt': return '⚔️';
-      default: return '';
-    }
-  };
-  
-  const truncateName = (name: string, maxLength: number = 12) => {
-    return name.length > maxLength ? name.substring(0, maxLength) + '...' : name;
-  };
-  
-  return (
-    <div className="fixed bottom-14 left-0 right-0 z-40 px-2 pb-1">
-      <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-2 max-w-screen-xl mx-auto">
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
-          {enemies.slice(0, 9).map(enemy => {
-            const hpPercentage = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
-            const statusIcon = getStatusIcon(enemy.statusEffect || undefined);
-            
-            return (
-              <div key={enemy.id} className="bg-gray-800/60 rounded p-1">
-                <div className="flex items-center gap-1 mb-1">
-                  {statusIcon && <span className="text-xs">{statusIcon}</span>}
-                  <span className="text-xs text-gray-300 truncate flex-1">
-                    {truncateName(enemy.name)}
-                  </span>
-                </div>
-                <div className="bg-gray-700 rounded-full h-1.5 mb-0.5">
-                  <div
-                    className={`h-1.5 rounded-full transition-all duration-300 ${getBehaviorColor(enemy.behavior)}`}
-                    style={{ width: `${hpPercentage}%` }}
-                  />
-                </div>
-                <div className="text-xs text-gray-400 text-center tabular-nums">
-                  {Math.floor(enemy.hp)}/{enemy.maxHp}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const GameHUD: React.FC = () => {
   const { player, gameState } = useGameStore();
   const [showAreaInfo, setShowAreaInfo] = useState(false);
@@ -231,8 +168,6 @@ export const GameHUD: React.FC = () => {
         />
       )}
     </div>
-    
-    <EnemyHPBars />
     </>
   );
 };

@@ -217,4 +217,11 @@ export class GameEngine {
   public getBackgroundManager() {
     return this.backgroundManager;
   }
+
+  public getEnemyScreenPositions(): Array<{id: string, x: number, y: number}> {
+    return this.getStore().renderState.enemies.map(e => {
+      const pos = this.enemyManager.getSpritePosition(e.id);
+      return pos ? { id: e.id, x: pos.x, y: pos.y } : null;
+    }).filter(Boolean) as Array<{id: string, x: number, y: number}>;
+  }
 }
