@@ -12,8 +12,8 @@ export const GameHUD: React.FC = () => {
   const isLowHp = hpPercentage < 30;
 
   // Status effect indicators
-  const hasPoison = gameState.activeStatusEffects.includes('poison');
-  const hasTaunt = gameState.activeStatusEffects.includes('taunt');
+  const hasPoison = gameState?.activeStatusEffects?.includes('poison') || false;
+  const hasTaunt = gameState?.activeStatusEffects?.includes('taunt') || false;
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm z-50"
