@@ -19,6 +19,7 @@ export class CombatManager {
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
   private postBossTimeout: ReturnType<typeof setTimeout> | null = null;
+  private poisonTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   constructor(
     getStore: () => GameStore,
@@ -114,13 +115,16 @@ export class CombatManager {
               if (poisonTicks < 3) {
                 this.getStore().takeDamage(5);
                 poisonTicks++;
-                setTimeout(applyPoison, 2000);
+                const t = setTimeout(applyPoison, 2000);
+                this.poisonTimeouts.push(t);
               } else {
                 this.getStore().removeStatusEffect('poison');
+                this.poisonTimeouts = [];
               }
             };
             
-            setTimeout(applyPoison, 2000);
+            const t = setTimeout(applyPoison, 2000);
+            this.poisonTimeouts.push(t);
           }
         }
         
@@ -258,6 +262,12 @@ export class CombatManager {
   }
 
   private completeWave() {
+    // Limpiar todos los status effects del jugador al terminar la wave
+    this.getStore().removeStatusEffect('poison');
+    this.getStore().removeStatusEffect('taunt');
+    this.poisonTimeouts.forEach(t => clearTimeout(t));
+    this.poisonTimeouts = [];
+    
     const currentWave = this.getStore().gameState.currentWave;
     const nextWave = currentWave + 1;
 
@@ -281,6 +291,11 @@ export class CombatManager {
   }
 
   private gameOver() {
+    // Cancelar veneno activo
+    this.poisonTimeouts.forEach(t => clearTimeout(t));
+    this.poisonTimeouts = [];
+    this.getStore().removeStatusEffect('poison');
+    
     // Pausar combate
     this.getStore().setIsFighting(false);
 
@@ -311,5 +326,7 @@ export class CombatManager {
       clearTimeout(this.postBossTimeout);
       this.postBossTimeout = null;
     }
+    this.poisonTimeouts.forEach(t => clearTimeout(t));
+    this.poisonTimeouts = [];
   }
 }

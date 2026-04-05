@@ -42,9 +42,18 @@ export const useGameStore = create<GameStore>()(
       name: 'afk-rpg-storage',
       version: 1,
       migrate: (persistedState: any, version: number) => {
-        if (!persistedState.gameState.activeStatusEffects) {
-          persistedState.gameState.activeStatusEffects = [];
-        }
+        const gs = persistedState?.gameState || {};
+        persistedState.gameState = {
+          currentWave: gs.currentWave ?? 1,
+          currentPhase: gs.currentPhase ?? 1,
+          isInBossWave: gs.isInBossWave ?? false,
+          isFighting: false,
+          isAfk: gs.isAfk ?? true,
+          lastPlayTime: gs.lastPlayTime ?? Date.now(),
+          totalPlayTime: gs.totalPlayTime ?? 0,
+          currentBackground: gs.currentBackground ?? 1,
+          activeStatusEffects: gs.activeStatusEffects ?? [],
+        };
         return persistedState;
       },
       // Exclude renderState from persistence: enemies contain runtime-only data

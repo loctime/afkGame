@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/User/Desktop/Proyectos/ControlGames/AFK-GAME/src -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))"
+    ]
+  }
+}
