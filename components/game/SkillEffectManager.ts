@@ -421,26 +421,51 @@ export class SkillEffectManager {
         }
       };
       animate();
+    } else if (type === 'enemy_ranged') {
+      // Impacto proyectil enemigo
+      hitEffect.beginFill(0xff3300);
+      hitEffect.drawCircle(0, 0, 12);
+      hitEffect.endFill();
+
+      const container = new PIXI.Container();
+      container.addChild(hitEffect);
+      container.x = x;
+      container.y = y;
+
+      this.gameContainer.addChild(container);
+
+      let scale = 0.5;
+      const animate = () => {
+        scale += 0.15;
+        container.scale.set(scale);
+        container.alpha = 1 - (scale - 0.5) * 2;
+        if (scale < 1.5) {
+          requestAnimationFrame(animate);
+        } else {
+          this.gameContainer.removeChild(container);
+        }
+      };
+      animate();
     } else {
       // Efecto de impacto básico
       hitEffect.beginFill(0xffff00);
       hitEffect.drawCircle(0, 0, 15);
       hitEffect.endFill();
-      
+
       const container = new PIXI.Container();
       container.addChild(hitEffect);
       container.x = x;
       container.y = y;
-      
+
       this.gameContainer.addChild(container);
-      
+
       // Animar el impacto
       let scale = 0.5;
       const animate = () => {
         scale += 0.15;
         container.scale.set(scale);
         container.alpha = 1 - (scale - 0.5) * 2;
-        
+
         if (scale < 1.5) {
           requestAnimationFrame(animate);
         } else {
@@ -449,6 +474,112 @@ export class SkillEffectManager {
       };
       animate();
     }
+  }
+
+  public createEnemyRangedAttack(fromX: number, fromY: number, targetX: number, targetY: number) {
+    if (!this.canSpawnEffect()) return;
+
+    const projectile = new PIXI.Graphics();
+    projectile.beginFill(0xff3300);
+    projectile.drawCircle(0, 0, 6);
+    projectile.endFill();
+
+    const glow = new PIXI.Graphics();
+    glow.beginFill(0xff3300, 0.5);
+    glow.drawCircle(0, 0, 10);
+    glow.endFill();
+
+    const container = new PIXI.Container();
+    container.addChild(glow);
+    container.addChild(projectile);
+    container.x = fromX;
+    container.y = fromY;
+
+    this.gameContainer.addChild(container);
+
+    this.skillEffects.push({
+      id: `enemy_ranged_${this.skillEffectId++}`,
+      sprite: container as any,
+      targetX,
+      targetY,
+      speed: 220,
+      damage: 0,
+      type: 'enemy_ranged',
+    });
+  }
+
+  public createEnemyMeleeAttack(enemyX: number, enemyY: number) {
+    const flash = new PIXI.Graphics();
+    flash.beginFill(0xff0000, 0.8);
+    flash.drawCircle(0, 0, 20);
+    flash.endFill();
+    flash.x = enemyX;
+    flash.y = enemyY;
+    flash.scale.set(0.3);
+
+    this.gameContainer.addChild(flash);
+
+    let scale = 0.3;
+    const animate = () => {
+      scale += 0.08;
+      flash.scale.set(scale);
+      flash.alpha = 0.8 * (1 - (scale - 0.3) / 1.2);
+      if (scale < 1.5) {
+        requestAnimationFrame(animate);
+      } else {
+        this.gameContainer.removeChild(flash);
+      }
+    };
+    animate();
+  }
+
+  public createEnemyTankAttack(enemyX: number, enemyY: number) {
+    const wave = new PIXI.Graphics();
+    wave.lineStyle(3, 0xaa00ff, 0.9);
+    wave.drawCircle(0, 0, 15);
+    wave.x = enemyX;
+    wave.y = enemyY;
+
+    this.gameContainer.addChild(wave);
+
+    let radius = 15;
+    const animate = () => {
+      radius += 1.5;
+      wave.clear();
+      wave.lineStyle(3, 0xaa00ff, 0.9 * (1 - (radius - 15) / 25));
+      wave.drawCircle(0, 0, radius);
+      if (radius < 40) {
+        requestAnimationFrame(animate);
+      } else {
+        this.gameContainer.removeChild(wave);
+      }
+    };
+    animate();
+  }
+
+  public createEnemyAggressiveAttack(enemyX: number, enemyY: number, _targetX: number, _targetY: number) {
+    const flash = new PIXI.Graphics();
+    flash.beginFill(0xff8800, 0.9);
+    flash.drawCircle(0, 0, 18);
+    flash.endFill();
+    flash.x = enemyX;
+    flash.y = enemyY;
+    flash.scale.set(0.5);
+
+    this.gameContainer.addChild(flash);
+
+    let scale = 0.5;
+    const animate = () => {
+      scale += 0.1;
+      flash.scale.set(scale);
+      flash.alpha = 0.9 * (1 - (scale - 0.5) / 1.5);
+      if (scale < 2) {
+        requestAnimationFrame(animate);
+      } else {
+        this.gameContainer.removeChild(flash);
+      }
+    };
+    animate();
   }
 
   public clearAllEffects() {

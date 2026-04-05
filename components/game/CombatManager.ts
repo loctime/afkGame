@@ -128,7 +128,31 @@ export class CombatManager {
           }
         }
         
+        // Efectos visuales del ataque enemigo según comportamiento
+        const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+        const playerSprite = this.playerManager.getPlayer();
+        const playerX = playerSprite?.x ?? 0;
+        const playerY = playerSprite?.y ?? 0;
+
+        if (enemyPos) {
+          switch (enemy.behavior) {
+            case 'ranged':
+              this.skillEffectManager.createEnemyRangedAttack(enemyPos.x, enemyPos.y, playerX, playerY);
+              break;
+            case 'melee':
+              this.skillEffectManager.createEnemyMeleeAttack(enemyPos.x, enemyPos.y);
+              break;
+            case 'tank':
+              this.skillEffectManager.createEnemyTankAttack(enemyPos.x, enemyPos.y);
+              break;
+            case 'aggressive':
+              this.skillEffectManager.createEnemyAggressiveAttack(enemyPos.x, enemyPos.y, playerX, playerY);
+              break;
+          }
+        }
+
         this.getStore().takeDamage(mitigated);
+        this.skillEffectManager.createDamageNumber(playerX, playerY - 40, mitigated, false);
 
         // Delay hit animation so attack animation ('run'=verde) is visible first (~250ms)
         setTimeout(() => {
