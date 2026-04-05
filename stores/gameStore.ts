@@ -33,7 +33,7 @@ export const useGameStore = create<GameStore>()(
       
       // Actions
       ...createPlayerActions(set, get),
-      ...createGameStateActions(set),
+      ...createGameStateActions(set, get),
       ...createInventoryActions(set),
       ...createSkillsActions(set, get),
       ...createPersistenceActions(set, get),

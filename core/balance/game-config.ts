@@ -57,42 +57,6 @@ export const GAME_CONFIG = {
   },
 };
 
-// Configuración de enemigos
-export const ENEMY_TYPES = {
-  GOBLIN: {
-    name: 'Goblin',
-    baseHP: 50,
-    baseDamage: 10,
-    baseXP: 15,
-    baseGold: 5,
-    dropRate: 0.1,
-  },
-  ORC: {
-    name: 'Orc',
-    baseHP: 80,
-    baseDamage: 15,
-    baseXP: 25,
-    baseGold: 8,
-    dropRate: 0.12,
-  },
-  TROLL: {
-    name: 'Troll',
-    baseHP: 120,
-    baseDamage: 20,
-    baseXP: 40,
-    baseGold: 12,
-    dropRate: 0.15,
-  },
-  BOSS: {
-    name: 'Boss',
-    baseHP: 500,
-    baseDamage: 50,
-    baseXP: 200,
-    baseGold: 100,
-    dropRate: 1.0, // siempre dropea algo
-  },
-};
-
 // Configuración de items
 export const ITEM_RARITIES = {
   COMMON: {

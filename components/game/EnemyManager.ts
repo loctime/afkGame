@@ -210,23 +210,6 @@ export class EnemyManager {
     return selectedMonster.iconIndex;
   }
 
-  private getEnemyBehavior(wave: number): 'melee' | 'ranged' | 'tank' | 'aggressive' {
-    // Filter monsters by minWave <= wave and choose one randomly
-    const availableMonsters = Object.values(MONSTER_CATALOG).filter(
-      monster => monster.minWave <= wave
-    );
-    
-    if (availableMonsters.length === 0) {
-      // Fallback to random behavior if none available
-      const behaviors = ['melee', 'ranged', 'tank', 'aggressive'];
-      const behaviorIndex = Math.floor(Math.random() * behaviors.length);
-      return behaviors[behaviorIndex] as 'melee' | 'ranged' | 'tank' | 'aggressive';
-    }
-    
-    const selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
-    return selectedMonster.behavior;
-  }
-
   private getEnemySpeed(behavior: string, level: number): number {
     const baseSpeed = 30;
     switch (behavior) {
@@ -255,26 +238,6 @@ export class EnemyManager {
       default:
         return 50;
     }
-  }
-
-  private getEnemyName(wave: number): string {
-    // Filter monsters by minWave <= wave and choose one randomly
-    const availableMonsters = Object.values(MONSTER_CATALOG).filter(
-      monster => monster.minWave <= wave
-    );
-    
-    if (availableMonsters.length === 0) {
-      // Fallback to generic names if none available
-      const enemyTypes = [
-        'Slime', 'Goblin', 'Orc', 'Skeleton', 'Zombie',
-        'Troll', 'Ogre', 'Demon', 'Vampire', 'Werewolf'
-      ];
-      const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-      return `${enemyType} Lv.${wave}`;
-    }
-    
-    const selectedMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
-    return selectedMonster.name;
   }
 
   public spawnEnemiesForWave(wave: number): EnemyData[] {

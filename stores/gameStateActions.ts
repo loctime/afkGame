@@ -1,7 +1,7 @@
 import { EnemyData } from '../types/game';
 import { GameStore } from './types';
 
-export const createGameStateActions = (set: any) => ({
+export const createGameStateActions = (set: any, get: () => GameStore) => ({
   setWave: (wave: number) => set((state: GameStore) => ({
     gameState: {
       ...state.gameState,

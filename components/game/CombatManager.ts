@@ -221,8 +221,6 @@ export class CombatManager {
   }
 
   private useBasicAttack(enemy: EnemyData) {
-    console.log('[Combat] useBasicAttack — enemy:', enemy.name, 'hp:', enemy.hp);
-    
     const basicAttack = this.getStore().skills.find(s => s.id === 'basic_attack');
     const playerSprite = this.playerManager.getPlayer();
 
