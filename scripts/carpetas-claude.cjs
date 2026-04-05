@@ -8,7 +8,7 @@ if (!fs.existsSync(DEST_DIR)) {
   fs.mkdirSync(DEST_DIR);
 }
 
-const INCLUDE_DIRS = ["app", "components", "core", "stores", "utils"];
+const INCLUDE_DIRS = ["app", "components", "core", "stores", "types", "utils"];
 const INCLUDE_FILES = ["INSTALL.md", "package.json", "readme.md", "todo.md"];
 
 function copyFilesFlat(src, dest) {

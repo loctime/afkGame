@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-const IS_DEV = process.env.NODE_ENV === 'development';
+const IS_DEV = true;
 
 export class BackgroundManager {
   private backgroundLayers: PIXI.Sprite[] = [];

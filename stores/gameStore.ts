@@ -40,6 +40,13 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'afk-rpg-storage',
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState.gameState.activeStatusEffects) {
+          persistedState.gameState.activeStatusEffects = [];
+        }
+        return persistedState;
+      },
       // Exclude renderState from persistence: enemies contain runtime-only data
       // (HP mid-combat, spawn positions) that should reset each session.
       // This also prevents any accidental PIXI object reference from reaching JSON.stringify.

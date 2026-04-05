@@ -2,7 +2,7 @@ import { get as getFromDB, set as setToDB, del as delFromDB } from 'idb-keyval';
 import { GameStore } from './types';
 import { initialSkills, initialEquipment } from './initialState';
 
-const IS_DEV = process.env.NODE_ENV === 'development';
+const IS_DEV = true;
 
 export const createPersistenceActions = (set: any, get: () => GameStore) => ({
   saveGame: async () => {

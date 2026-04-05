@@ -3,7 +3,7 @@ import { EnemyData } from '../../types/game';
 import { MONSTER_CATALOG, BEHAVIOR_MODIFIERS } from '../../core/balance/game-config';
 
 const MAX_ENEMY_SIZE = 64;
-const IS_DEV = process.env.NODE_ENV === 'development';
+const IS_DEV = true;
 
 export class EnemyManager {
   private enemies: Map<string, PIXI.AnimatedSprite> = new Map();
