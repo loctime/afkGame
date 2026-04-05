@@ -19,6 +19,7 @@ export class CombatManager {
   // Accumulates elapsed time; a combat round fires when it reaches ATTACK_INTERVAL
   private attackAccumulator = 0;
   private postBossTimeout: ReturnType<typeof setTimeout> | null = null;
+  private poisoned = false;
 
   constructor(
     getStore: () => GameStore,
@@ -52,7 +53,14 @@ export class CombatManager {
     this.attackAccumulator -= ATTACK_INTERVAL;
 
     {
-      const enemy = this.getStore().renderState.enemies[0];
+      // Taunt logic: prioritize enemies with taunt status
+      const enemies = this.getStore().renderState.enemies;
+      let enemy = enemies[0];
+      
+      const tauntedEnemy = enemies.find(e => e.statusEffect === 'taunt');
+      if (tauntedEnemy) {
+        enemy = tauntedEnemy;
+      }
 
       // Intentar usar skills automáticamente
       const skillUsed = this.tryUseSkill(enemy);
@@ -88,6 +96,25 @@ export class CombatManager {
         // Enemy attacks player — mitigate with VIT (0.5 per point, min 1), then show hit animation
         const defStats = getTotalStats(this.getStore().player, this.getStore().equipment);
         const mitigated = Math.max(1, enemy.damage - Math.floor(defStats.vit * 0.5));
+        
+        // Poison logic: 40% chance for ranged enemies to apply poison
+        if (enemy.statusEffect === 'poison' && Math.random() < 0.4 && !this.poisoned) {
+          this.poisoned = true;
+          let poisonTicks = 0;
+          
+          const applyPoison = () => {
+            if (poisonTicks < 3) {
+              this.getStore().takeDamage(5);
+              poisonTicks++;
+              setTimeout(applyPoison, 2000);
+            } else {
+              this.poisoned = false;
+            }
+          };
+          
+          setTimeout(applyPoison, 2000);
+        }
+        
         this.getStore().takeDamage(mitigated);
 
         // Delay hit animation so attack animation ('run'=verde) is visible first (~250ms)
@@ -145,6 +172,12 @@ export class CombatManager {
         // Attack hit
         enemy.hp -= skillDamage;
         
+        // Reflect logic: return 20% damage to player
+        if (enemy.statusEffect === 'reflect') {
+          const reflectDamage = Math.floor(skillDamage * 0.2);
+          this.getStore().takeDamage(reflectDamage);
+        }
+        
         if (enemyPos) {
           this.playerManager.faceTarget(enemyPos.x);
           if (attackSkill.id === 'fire_ball') {
@@ -193,6 +226,12 @@ export class CombatManager {
       } else {
         // Attack hit
         enemy.hp -= damageAmount;
+        
+        // Reflect logic: return 20% damage to player
+        if (enemy.statusEffect === 'reflect') {
+          const reflectDamage = Math.floor(damageAmount * 0.2);
+          this.getStore().takeDamage(reflectDamage);
+        }
         
         const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
         if (enemyPos) {

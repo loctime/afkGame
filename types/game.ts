@@ -33,6 +33,7 @@ export interface EnemyData {
   preferredDistance: number;
   speed: number;
   dodgeChance: number;
+  statusEffect: 'poison' | 'reflect' | 'taunt' | null;
   x: number;
   y: number;
 }

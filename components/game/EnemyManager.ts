@@ -322,6 +322,7 @@ export class EnemyManager {
       const modifiedDamage = Math.floor(baseDamage * modifiers.damage);
       const modifiedSpeed = Math.floor(speed * modifiers.speed);
       const modifiedXpReward = Math.floor(baseXpReward * modifiers.xp);
+      const statusEffect = modifiers.statusEffect as 'poison' | 'reflect' | 'taunt' | null;
 
       // Pure data — no PIXI references
       const enemyData: EnemyData = {
@@ -337,6 +338,7 @@ export class EnemyManager {
         preferredDistance,
         speed: modifiedSpeed,
         dodgeChance: modifiers.dodgeChance,
+        statusEffect: statusEffect,
         x,
         y,
       };

@@ -420,6 +420,7 @@ export const BEHAVIOR_MODIFIERS = {
     attackSpeed: 1,
     xp: 1,
     dodgeChance: 0,
+    statusEffect: null,
   },
   AGGRESSIVE: {
     hp: 1,
@@ -428,6 +429,7 @@ export const BEHAVIOR_MODIFIERS = {
     attackSpeed: 1.5,
     xp: 1,
     dodgeChance: 0,
+    statusEffect: 'reflect',
   },
   TANK: {
     hp: 2,
@@ -436,6 +438,7 @@ export const BEHAVIOR_MODIFIERS = {
     attackSpeed: 0.5,
     xp: 1,
     dodgeChance: 0,
+    statusEffect: 'taunt',
   },
   RANGED: {
     hp: 1,
@@ -444,5 +447,6 @@ export const BEHAVIOR_MODIFIERS = {
     attackSpeed: 1,
     xp: 1.3,
     dodgeChance: 0.5,
+    statusEffect: 'poison',
   },
 };
