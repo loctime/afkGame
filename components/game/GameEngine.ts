@@ -22,28 +22,24 @@ export class GameEngine {
   constructor(canvas: HTMLCanvasElement, getStore: () => GameStore) {
     this.getStore = getStore;
 
-    // Initialize PIXI Application
-    const settingsAny = (PIXI as any).settings;
-    if (settingsAny) {
-      if (typeof settingsAny.CHECK_FOR_MAX_IF_STATEMENTS !== 'undefined') {
-        settingsAny.CHECK_FOR_MAX_IF_STATEMENTS = false;
-      }
-      if (typeof settingsAny.CHECK_MAX_IF_STATEMENTS !== 'undefined') {
-        settingsAny.CHECK_MAX_IF_STATEMENTS = false;
-      }
-      if (typeof settingsAny.CHECK_FOR_MAX_IF_STATEMENTS_IN_SHADER !== 'undefined') {
-        settingsAny.CHECK_FOR_MAX_IF_STATEMENTS_IN_SHADER = false;
-      }
+    try {
+      this.app = new PIXI.Application({
+        view: canvas,
+        width: window.innerWidth,
+        height: window.innerHeight - 120,
+        backgroundColor: 0x2a2a4a,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+      });
+    } catch (e) {
+      console.error('[Engine] PIXI init failed:', e);
+      this.app = new PIXI.Application({
+        view: canvas,
+        width: window.innerWidth,
+        height: window.innerHeight - 120,
+        backgroundColor: 0x2a2a4a,
+      });
     }
-
-    this.app = new PIXI.Application({
-      view: canvas,
-      width: window.innerWidth,
-      height: window.innerHeight - 120, // Leave space for HUD
-      backgroundColor: 0x2a2a4a,
-      resolution: window.devicePixelRatio || 1,
-      autoDensity: true,
-    });
 
     this.gameContainer = new PIXI.Container();
     this.app.stage.addChild(this.gameContainer);
@@ -114,6 +110,8 @@ export class GameEngine {
   }
 
   public startWave(wave: number) {
+    console.log('[Engine] startWave:', wave);
+    
     // Clear existing enemies
     this.enemyManager.clearAllEnemies();
 

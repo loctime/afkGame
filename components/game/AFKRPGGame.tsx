@@ -25,31 +25,56 @@ const AFKRPGGame: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!canvasRef.current || engineRef.current) return;
+    (async () => {
+      if (!canvasRef.current || engineRef.current) return;
 
-    const engine = new GameEngine(canvasRef.current, useGameStore.getState);
-    engineRef.current = engine;
-    setGameEngine(engine);
+      if (!canvasRef.current || engineRef.current) return;
 
-      // Auto-arrancar: si hay boss pendiente, el overlay lo gestiona;
-      // de lo contrario iniciar la wave actual automáticamente
-    const startTimeout = setTimeout(() => {
-      const state = useGameStore.getState().gameState;
-      if (!(state.isInBossWave && !state.isFighting)) {
-        engine.startWave(state.currentWave);
+      // Sanear estado por si viene corrupto de IndexedDB
+      const currentState = useGameStore.getState();
+      if (!currentState.gameState.activeStatusEffects) {
+        useGameStore.setState(state => ({
+          gameState: { ...state.gameState, activeStatusEffects: [] }
+        }));
       }
-    }, 800);
+      // Asegurar que isFighting empiece en false (el engine lo activa cuando spawna)
+      useGameStore.setState(state => ({
+        gameState: { ...state.gameState, isFighting: false }
+      }));
 
-    const readyTimeout = setTimeout(() => {
-      setIsEngineReady(true);
-    }, 1200);
+      const engine = new GameEngine(canvasRef.current, useGameStore.getState);
+      engineRef.current = engine;
+      setGameEngine(engine);
+
+        // Auto-arrancar: si hay boss pendiente, el overlay lo gestiona;
+        // de lo contrario iniciar la wave actual automáticamente
+      const startTimeout = setTimeout(() => {
+        const state = useGameStore.getState().gameState;
+        if (!(state.isInBossWave && !state.isFighting)) {
+          engine.startWave(state.currentWave);
+        }
+      }, 800);
+
+      const readyTimeout = setTimeout(() => {
+        setIsEngineReady(true);
+      }, 1200);
+
+      return () => {
+        clearTimeout(startTimeout);
+        clearTimeout(readyTimeout);
+        engine.destroy();
+        engineRef.current = null;
+        setGameEngine(null);
+      };
+    })();
 
     return () => {
-      clearTimeout(startTimeout);
-      clearTimeout(readyTimeout);
-      engine.destroy();
-      engineRef.current = null;
-      setGameEngine(null);
+      // Cleanup principal si el useEffect se desmonta antes de tiempo
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+        setGameEngine(null);
+      }
     };
   }, []);
 

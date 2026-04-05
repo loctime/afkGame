@@ -35,16 +35,13 @@ export class CombatManager {
   }
 
   public updateCombat(deltaTime: number) {
-    
+    if (!this.getStore().gameState.isFighting) return;
+    if (this.getStore().renderState.enemies.length === 0) return;
 
     const player = this.getStore().player;
 
     // Actualizar cooldowns de skills
     this.getStore().updateSkillCooldowns(deltaTime);
-
-    if (this.getStore().renderState.enemies.length === 0) {
-      return;
-    }
 
     // Accumulate time; only trigger a combat round once per ATTACK_INTERVAL seconds
     this.attackAccumulator += deltaTime;
@@ -214,6 +211,8 @@ export class CombatManager {
   }
 
   private useBasicAttack(enemy: EnemyData) {
+    console.log('[Combat] useBasicAttack — enemy:', enemy.name, 'hp:', enemy.hp);
+    
     const basicAttack = this.getStore().skills.find(s => s.id === 'basic_attack');
     const playerSprite = this.playerManager.getPlayer();
 
