@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { EnemyData } from '../../types/game';
-import { MONSTER_CATALOG } from '../../core/balance/game-config';
+import { MONSTER_CATALOG, BEHAVIOR_MODIFIERS } from '../../core/balance/game-config';
 
 const MAX_ENEMY_SIZE = 64;
 const IS_DEV = process.env.NODE_ENV === 'development';
@@ -309,19 +309,34 @@ export class EnemyManager {
       const speed = this.getEnemySpeed(behavior, wave);
       const preferredDistance = this.getPreferredDistance(behavior);
 
+      // Get behavior modifiers
+      const behaviorKey = behavior.toUpperCase() as keyof typeof BEHAVIOR_MODIFIERS;
+      const modifiers = BEHAVIOR_MODIFIERS[behaviorKey];
+      
+      // Apply behavior modifiers to base stats
+      const baseHp = 50 + (wave * 10);
+      const baseDamage = 10 + (wave * 2);
+      const baseXpReward = 15 * wave;
+      
+      const modifiedHp = Math.floor(baseHp * modifiers.hp);
+      const modifiedDamage = Math.floor(baseDamage * modifiers.damage);
+      const modifiedSpeed = Math.floor(speed * modifiers.speed);
+      const modifiedXpReward = Math.floor(baseXpReward * modifiers.xp);
+
       // Pure data — no PIXI references
       const enemyData: EnemyData = {
         id: `enemy_${wave}_${i}`,
         name: selectedMonster.name,
         level: wave,
-        hp: 50 + (wave * 10),
-        maxHp: 50 + (wave * 10),
-        damage: 10 + (wave * 2),
-        xpReward: 15 * wave,
+        hp: modifiedHp,
+        maxHp: modifiedHp,
+        damage: modifiedDamage,
+        xpReward: modifiedXpReward,
         goldReward: 5 * wave,
         behavior,
         preferredDistance,
-        speed,
+        speed: modifiedSpeed,
+        dodgeChance: modifiers.dodgeChance,
         x,
         y,
       };

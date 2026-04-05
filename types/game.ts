@@ -32,6 +32,7 @@ export interface EnemyData {
   behavior: 'melee' | 'ranged' | 'tank' | 'aggressive';
   preferredDistance: number;
   speed: number;
+  dodgeChance: number;
   x: number;
   y: number;
 }

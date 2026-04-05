@@ -133,20 +133,31 @@ export class CombatManager {
     if (attackSkill && player.mp >= attackSkill.manaCost) {
       this.getStore().useSkill(attackSkill.id);
       const skillDamage = attackSkill.damage || 0;
-      enemy.hp -= skillDamage;
-
-      if (enemyPos) {
-        this.playerManager.faceTarget(enemyPos.x);
-        if (attackSkill.id === 'fire_ball') {
-          this.skillEffectManager.createFireballEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
-        } else if (attackSkill.id === 'ice_shard') {
-          this.skillEffectManager.createIceShardEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
-        } else if (attackSkill.id === 'lightning_bolt') {
-          this.skillEffectManager.createLightningBoltEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
-        } else {
-          this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+      
+      // Check for dodge
+      if (Math.random() < enemy.dodgeChance) {
+        // Attack missed
+        if (enemyPos) {
+          this.playerManager.faceTarget(enemyPos.x);
+          this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, 0, false);
         }
-        this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, skillDamage, true);
+      } else {
+        // Attack hit
+        enemy.hp -= skillDamage;
+        
+        if (enemyPos) {
+          this.playerManager.faceTarget(enemyPos.x);
+          if (attackSkill.id === 'fire_ball') {
+            this.skillEffectManager.createFireballEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+          } else if (attackSkill.id === 'ice_shard') {
+            this.skillEffectManager.createIceShardEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+          } else if (attackSkill.id === 'lightning_bolt') {
+            this.skillEffectManager.createLightningBoltEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+          } else {
+            this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+          }
+          this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, skillDamage, true);
+        }
       }
 
       this.playerManager.changeAnimation('run');
@@ -170,13 +181,25 @@ export class CombatManager {
       const damageAmount = (basicAttack.damage || 0)
         + (totalStats.str * GAME_CONFIG.STATS.STR_DAMAGE_MULTIPLIER)
         + weaponBonus;
-      enemy.hp -= damageAmount;
-
-      const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
-      if (enemyPos) {
-        this.playerManager.faceTarget(enemyPos.x);
-        this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
-        this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, damageAmount);
+      
+      // Check for dodge
+      if (Math.random() < enemy.dodgeChance) {
+        // Attack missed
+        const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+        if (enemyPos) {
+          this.playerManager.faceTarget(enemyPos.x);
+          this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, 0, false);
+        }
+      } else {
+        // Attack hit
+        enemy.hp -= damageAmount;
+        
+        const enemyPos = this.enemyManager.getSpritePosition(enemy.id);
+        if (enemyPos) {
+          this.playerManager.faceTarget(enemyPos.x);
+          this.skillEffectManager.createBasicAttackEffect(playerSprite.x, playerSprite.y, enemyPos.x, enemyPos.y);
+          this.skillEffectManager.createDamageNumber(enemyPos.x, enemyPos.y - 20, damageAmount);
+        }
       }
 
       this.playerManager.changeAnimation('run');

@@ -411,3 +411,38 @@ export const MONSTER_CATALOG: Record<string, MonsterDefinition> = {
     minWave: 60,
   },
 };
+
+export const BEHAVIOR_MODIFIERS = {
+  MELEE: {
+    hp: 1,
+    damage: 1,
+    speed: 1,
+    attackSpeed: 1,
+    xp: 1,
+    dodgeChance: 0,
+  },
+  AGGRESSIVE: {
+    hp: 1,
+    damage: 1.5,
+    speed: 1.5,
+    attackSpeed: 1.5,
+    xp: 1,
+    dodgeChance: 0,
+  },
+  TANK: {
+    hp: 2,
+    damage: 1,
+    speed: 0.5,
+    attackSpeed: 0.5,
+    xp: 1,
+    dodgeChance: 0,
+  },
+  RANGED: {
+    hp: 1,
+    damage: 1,
+    speed: 1,
+    attackSpeed: 1,
+    xp: 1.3,
+    dodgeChance: 0.5,
+  },
+};
