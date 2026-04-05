@@ -311,8 +311,11 @@ export class CombatManager {
     // Pausar combate
     this.getStore().setIsFighting(false);
 
-    // Mostrar animación de muerte
-    this.playerManager.changeAnimation('dead');
+    // Mostrar animación de caída antes de muerte
+    this.playerManager.changeAnimation('fall');
+    setTimeout(() => {
+      this.playerManager.changeAnimation('dead');
+    }, 600);
 
     // Revivir en la wave 1 de la fase actual después de 2 segundos
     setTimeout(() => {

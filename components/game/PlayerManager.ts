@@ -7,6 +7,7 @@ export class PlayerManager {
   private playerAnimations: Map<string, PIXI.Texture[]> = new Map();
   private currentAnimation: string = 'idle';
   private pulseEffect: NodeJS.Timeout | null = null;
+  private blinkTimeout: NodeJS.Timeout | null = null;
   private facing: 1 | -1 = 1;
   private gameContainer: PIXI.Container;
   private app: PIXI.Application;
@@ -85,6 +86,25 @@ export class PlayerManager {
     const deadFrames = [];
     deadFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_DEAD.png`));
     this.playerAnimations.set('dead', deadFrames);
+
+    // Cargar animación de blink
+    const blinkFrames = [];
+    for (let i = 1; i <= 2; i++) {
+      blinkFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_BLINK_${i}.png`));
+    }
+    this.playerAnimations.set('blink', blinkFrames);
+
+    // Cargar animación de fall
+    const fallFrames = [];
+    for (let i = 1; i <= 2; i++) {
+      fallFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_FALL_${i}.png`));
+    }
+    this.playerAnimations.set('fall', fallFrames);
+
+    // Cargar animación de jump
+    const jumpFrames = [];
+    jumpFrames.push(PIXI.Texture.from(`/assets/sprites/Alien/Without Light Outline/Fames/Alien_JUMP.png`));
+    this.playerAnimations.set('jump', jumpFrames);
   }
 
   public changeAnimation(animationName: string) {
@@ -113,6 +133,18 @@ export class PlayerManager {
         case 'dead':
           this.player.tint = 0x888888;
           this.player.alpha = 0.8;
+          break;
+        case 'blink':
+          this.player.tint = 0x44aaff;
+          this.player.alpha = 1.0;
+          break;
+        case 'fall':
+          this.player.tint = 0xff8800;
+          this.player.alpha = 1.0;
+          break;
+        case 'jump':
+          this.player.tint = 0x44aaff;
+          this.player.alpha = 1.0;
           break;
       }
     }
@@ -168,6 +200,33 @@ export class PlayerManager {
     };
     
     this.pulseEffect = setInterval(pulse, 16);
+  }
+
+  public startBlinkRoutine() {
+    const schedule = () => {
+      const delay = 4000 + Math.random() * 3000;
+      this.blinkTimeout = setTimeout(() => {
+        if (this.currentAnimation === 'idle') {
+          this.changeAnimation('blink');
+          setTimeout(() => {
+            if (this.currentAnimation === 'blink') {
+              this.changeAnimation('idle');
+            }
+            schedule();
+          }, 400);
+        } else {
+          schedule();
+        }
+      }, delay);
+    };
+    schedule();
+  }
+
+  public stopBlinkRoutine() {
+    if (this.blinkTimeout) {
+      clearTimeout(this.blinkTimeout);
+      this.blinkTimeout = null;
+    }
   }
 
   public stopPulseEffect() {
@@ -233,6 +292,7 @@ export class PlayerManager {
   }
 
   public destroy() {
+    this.stopBlinkRoutine();
     if (this.pulseEffect) {
       clearInterval(this.pulseEffect);
     }

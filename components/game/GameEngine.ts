@@ -47,6 +47,7 @@ export class GameEngine {
     // Inicializar managers
     this.backgroundManager = new BackgroundManager(this.app, this.gameContainer);
     this.playerManager = new PlayerManager(this.app, this.gameContainer);
+    this.playerManager.startBlinkRoutine();
     this.enemyManager = new EnemyManager(this.app, this.gameContainer);
     this.skillEffectManager = new SkillEffectManager(this.gameContainer);
     this.combatManager = new CombatManager(

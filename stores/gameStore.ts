@@ -18,6 +18,83 @@ import { createPersistenceActions } from './persistenceActions';
 // Re-export the GameStore type for backward compatibility
 export type { GameStore } from './types';
 
+// Storage manager to handle IndexedDB fallback
+const storageManager = {
+  useLocalStorage: false,
+  checked: false,
+  
+  async getItem(key: string) {
+    if (!this.checked) {
+      try {
+        await getFromDB('test-key');
+        this.checked = true;
+      } catch (error) {
+        console.warn('IndexedDB not available, using localStorage:', error);
+        this.useLocalStorage = true;
+        this.checked = true;
+      }
+    }
+    
+    try {
+      if (!this.useLocalStorage) {
+        const value = await getFromDB(key);
+        return value || null;
+      }
+    } catch (error) {
+      console.warn('IndexedDB getItem failed, switching to localStorage:', error);
+      this.useLocalStorage = true;
+    }
+    
+    // Fallback to localStorage
+    try {
+      const value = localStorage.getItem(`afk-rpg-storage-${key}`);
+      return value ? JSON.parse(value) : null;
+    } catch (e) {
+      console.error('localStorage also failed:', e);
+      return null;
+    }
+  },
+  
+  async setItem(key: string, value: any) {
+    try {
+      if (!this.useLocalStorage) {
+        await setToDB(key, value);
+        return;
+      }
+    } catch (error) {
+      console.warn('IndexedDB setItem failed, switching to localStorage:', error);
+      this.useLocalStorage = true;
+    }
+    
+    // Fallback to localStorage
+    try {
+      localStorage.setItem(`afk-rpg-storage-${key}`, JSON.stringify(value));
+    } catch (e) {
+      console.error('localStorage setItem also failed:', e);
+      // Silently fail to prevent game crash
+    }
+  },
+  
+  async removeItem(key: string) {
+    try {
+      if (!this.useLocalStorage) {
+        await delFromDB(key);
+        return;
+      }
+    } catch (error) {
+      console.warn('IndexedDB removeItem failed, switching to localStorage:', error);
+      this.useLocalStorage = true;
+    }
+    
+    // Fallback to localStorage
+    try {
+      localStorage.removeItem(`afk-rpg-storage-${key}`);
+    } catch (e) {
+      console.error('localStorage removeItem also failed:', e);
+    }
+  }
+};
+
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
@@ -67,16 +144,9 @@ export const useGameStore = create<GameStore>()(
         skills: state.skills,
       }),
       storage: createJSONStorage(() => ({
-        getItem: async (key) => {
-          const value = await getFromDB(key);
-          return value || null;
-        },
-        setItem: async (key, value) => {
-          await setToDB(key, value);
-        },
-        removeItem: async (key) => {
-          await delFromDB(key);
-        },
+        getItem: async (key) => storageManager.getItem(key),
+        setItem: async (key, value) => storageManager.setItem(key, value),
+        removeItem: async (key) => storageManager.removeItem(key),
       })),
     }
   )
