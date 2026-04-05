@@ -96,4 +96,13 @@ export const createGameStateActions = (set: any) => ({
       activeStatusEffects: state.gameState.activeStatusEffects.filter(e => e !== effect),
     }
   })),
+
+  updateEnemyHp: (enemyId: string, newHp: number) => set((state: GameStore) => ({
+    renderState: {
+      ...state.renderState,
+      enemies: state.renderState.enemies.map(e =>
+        e.id === enemyId ? { ...e, hp: newHp } : e
+      ),
+    },
+  })),
 });

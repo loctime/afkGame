@@ -23,6 +23,7 @@ export interface GameStore {
   setIsFighting: (value: boolean) => void;
   setEnemies: (enemies: EnemyData[]) => void;
   removeEnemy: (enemyId: string) => void;
+  updateEnemyHp: (enemyId: string, newHp: number) => void;
   addStatusEffect: (effect: 'poison' | 'taunt') => void;
   removeStatusEffect: (effect: 'poison' | 'taunt') => void;
   
