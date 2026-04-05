@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { EnemyData } from '../../types/game';
-import { MONSTER_CATALOG, BEHAVIOR_MODIFIERS } from '../../core/balance/game-config';
+import { MONSTER_CATALOG, BEHAVIOR_MODIFIERS, MONSTER_SIZES } from '../../core/balance/game-config';
 
 const MAX_ENEMY_SIZE = 64;
 const IS_DEV = true;
@@ -41,7 +41,9 @@ export class EnemyManager {
       animatedSprite.anchor.set(0.5);
 
       const baseSize = 32;
-      const targetSize = Math.min(baseSize + enemy.level * 1.5, MAX_ENEMY_SIZE);
+      const monster = Object.values(MONSTER_CATALOG).find(m => m.name === enemy.name);
+      const sizeKey = monster?.size ?? 'medium';
+      const targetSize = MONSTER_SIZES[sizeKey];
       const applyEnemyScaleFromTexture = () => {
         const w = animatedSprite.texture.width;
         if (w <= 0) return;
@@ -57,25 +59,26 @@ export class EnemyManager {
       animatedSprite.animationSpeed = 0.2;
       animatedSprite.play();
       
-      // Aplicar efectos visuales según el nivel con colores más vibrantes
-      if (enemy.level > 20) {
-        // Monstruos de alto nivel más brillantes
-        animatedSprite.tint = 0xffff00; // Amarillo brillante
-        animatedSprite.alpha = 1.0;
-      } else if (enemy.level > 10) {
-        // Monstruos de nivel medio
-        animatedSprite.tint = 0xff6666; // Rojo más claro
-        animatedSprite.alpha = 0.95;
-      } else {
-        // Monstruos de bajo nivel
-        animatedSprite.tint = 0xffffff; // Sin tinte, colores originales
-        animatedSprite.alpha = 1.0;
+      // Aplicar efectos visuales según behavior
+      switch (enemy.behavior) {
+        case 'tank':
+          animatedSprite.tint = 0xc084fc; // morado
+          break;
+        case 'aggressive':
+          animatedSprite.tint = 0xfb923c; // naranja
+          break;
+        case 'ranged':
+          animatedSprite.tint = 0x4ade80; // verde
+          break;
+        case 'melee':
+        default:
+          animatedSprite.tint = 0xffffff; // blanco (sin tinte)
+          break;
       }
+      animatedSprite.alpha = 1.0;
       
-      // Agregar efecto de flotación solo para algunos enemigos para reducir la carga
-      if (Math.random() < 0.2) { // Solo 20% de los enemigos tendrán flotación
-        this.addFloatingEffect(animatedSprite);
-      }
+      // Agregar efecto de flotación a todos los enemigos con fase aleatoria
+      this.addFloatingEffect(animatedSprite, Math.random() * Math.PI * 2);
       
       this.gameContainer.addChild(animatedSprite);
       return animatedSprite;
@@ -152,26 +155,19 @@ export class EnemyManager {
     return frames;
   }
 
-  private addFloatingEffect(animatedSprite: PIXI.AnimatedSprite) {
-    // Simplificar el efecto de flotación para evitar problemas de rendimiento
+  private addFloatingEffect(animatedSprite: PIXI.AnimatedSprite, phaseOffset: number = 0) {
     const startTime = Date.now();
-    const floatSpeed = 0.002;
-    const floatAmplitude = 1.5;
+    const floatSpeed = 0.0015 + Math.random() * 0.001; // velocidad ligeramente variable
+    const floatAmplitude = 2 + Math.random() * 2; // amplitud variable entre 2-4px
     const originalY = animatedSprite.y;
     
     const animate = () => {
       if (animatedSprite.parent) {
         const time = Date.now() - startTime;
-        const floatOffset = Math.sin(time * floatSpeed) * floatAmplitude;
-        
-        // Solo aplicar flotación vertical simple
-        animatedSprite.y = originalY + floatOffset;
-        
-        // Usar setTimeout en lugar de requestAnimationFrame para reducir la frecuencia
-        setTimeout(animate, 50); // 20 FPS en lugar de 60 FPS
+        animatedSprite.y = originalY + Math.sin(time * floatSpeed + phaseOffset) * floatAmplitude;
+        setTimeout(animate, 50);
       }
     };
-    
     animate();
   }
 
@@ -384,5 +380,15 @@ export class EnemyManager {
 
   public getEnemies() {
     return this.enemies;
+  }
+
+  public flashEnemyDamage(enemyId: string) {
+    const sprite = this.enemies.get(enemyId);
+    if (!sprite) return;
+    const originalTint = sprite.tint;
+    sprite.tint = 0xffffff;
+    setTimeout(() => {
+      if (sprite.parent) sprite.tint = originalTint;
+    }, 80);
   }
 }

@@ -185,6 +185,7 @@ export class CombatManager {
         // Attack hit
         enemy.hp -= skillDamage;
         this.getStore().updateEnemyHp(enemy.id, enemy.hp);
+        this.enemyManager.flashEnemyDamage(enemy.id);
         
         // Reflect logic: return 20% damage to player
         if (enemy.statusEffect === 'reflect') {
@@ -246,6 +247,7 @@ export class CombatManager {
         // Attack hit
         enemy.hp -= damageAmount;
         this.getStore().updateEnemyHp(enemy.id, enemy.hp);
+        this.enemyManager.flashEnemyDamage(enemy.id);
         
         // Reflect logic: return 20% damage to player
         if (enemy.statusEffect === 'reflect') {

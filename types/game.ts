@@ -114,4 +114,5 @@ export interface MonsterDefinition {
   name: string;
   behavior: 'melee' | 'aggressive' | 'ranged' | 'tank';
   minWave: number;
+  size: 'small' | 'medium' | 'large' | 'huge';
 }
